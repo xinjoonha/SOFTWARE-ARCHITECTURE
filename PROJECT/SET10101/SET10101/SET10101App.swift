@@ -8,9 +8,14 @@
 import SwiftUI
 
 @main
-struct SET10101App: App {
-    var body: some Scene {
-        WindowGroup {
+struct SET10101App: App
+{
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
+    var body: some Scene
+    {
+        WindowGroup
+        {
             ContentView()
         }
     }
