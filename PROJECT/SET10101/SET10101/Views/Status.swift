@@ -9,7 +9,7 @@ import SwiftUI
 
 struct Status: View
 {
-    @State private var currentStatus: String = "Available"
+    @Binding var currentStatus: String // Shared status binding
     
     var body: some View
     {
@@ -28,8 +28,6 @@ struct Status: View
                 .background(currentStatus == "Available" ? Color.green.opacity(0.2) : Color.red.opacity(0.2))
                 .cornerRadius(8)
             
-            Spacer()
-            
             Button(action:
             {
                 toggleStatus()
@@ -42,6 +40,9 @@ struct Status: View
                     .background(currentStatus == "Available" ? Color.red : Color.green)
                     .cornerRadius(8)
             }
+            .padding(.top, 16)
+            
+            Spacer()
         }
         .padding()
     }
@@ -51,11 +52,10 @@ struct Status: View
         // Toggle the status between "Available" and "Engaged"
         currentStatus = (currentStatus == "Available") ? "Engaged" : "Available"
         print("Status changed to: \(currentStatus)")
-        // Later: Connect this to Firebase to update the status in real-time
     }
 }
 
 #Preview
 {
-    Status()
+    Status(currentStatus: .constant("Available"))
 }

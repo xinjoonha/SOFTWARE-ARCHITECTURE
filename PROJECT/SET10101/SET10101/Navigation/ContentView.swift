@@ -9,35 +9,32 @@ import SwiftUI
 
 struct ContentView: View
 {
+    @State private var currentStatus: String = "Available" // Shared status
+    
     var body: some View
     {
         TabView
         {
-            Status()
+            DispatchDetails(currentStatus: $currentStatus)
                 .tabItem
                 {
-                    Image(systemName: "figure.mixed.cardio")
-                    Text("Status")
-                }
-            
-            DispatchDetails()
-                .tabItem
-                {
-                    Image(systemName: "newspaper")
-                    Text("Details")
+                    Image(systemName: "list.dash")
+                    Text("Dispatch")
                 }
 
-            CalloutUpdate()
+            CalloutUpdate(currentStatus: $currentStatus)
                 .tabItem
                 {
                     Image(systemName: "square.and.pencil")
                     Text("Update")
                 }
+
+            Status(currentStatus: $currentStatus)
+                .tabItem
+                {
+                    Image(systemName: "person")
+                    Text("Status")
+                }
         }
     }
-}
-
-#Preview
-{
-    ContentView()
 }

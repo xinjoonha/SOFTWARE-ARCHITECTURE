@@ -9,6 +9,8 @@ import SwiftUI
 
 struct CalloutUpdate: View
 {
+    @Binding var currentStatus: String // Shared status binding
+    
     @State private var actionsTaken: String = ""
     @State private var timeSpentMinutes: Int = 0
     @State private var timeSpentSeconds: Int = 0
@@ -16,90 +18,92 @@ struct CalloutUpdate: View
     
     var body: some View
     {
-        VStack(alignment: .leading, spacing: 16)
+        if currentStatus == "Available"
         {
-            Text("Call-Out Update")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .padding(.bottom, 8)
-            
-            VStack(alignment: .leading)
+            Text("Dispatch details will be here when engaged.")
+                .font(.title)
+                .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+                .padding()
+        }
+        else
+        {
+            VStack(alignment: .leading, spacing: 16)
             {
-                Text("Actions Taken")
-                
-                ZStack(alignment: .topLeading)
+                Text("Call-Out Update")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .padding(.bottom, 8)
+
+                VStack(alignment: .leading)
                 {
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.gray, lineWidth: 1)
-                        .background(RoundedRectangle(cornerRadius: 8).fill(Color.white))
+                    Text("Actions Taken")
                     
                     TextEditor(text: $actionsTaken)
-                        .padding(8) // Add padding inside the TextEditor
-                        .frame(height: 120) // Larger text box
+                        .frame(height: 120)
+                        .border(Color.gray, width: 1)
+                        .cornerRadius(8)
+                        .padding(.top, 4)
                 }
-            }
-            
-            VStack(alignment: .leading)
-            {
-                Text("Time Spent (Minutes & Seconds)")
-                
-                HStack
+
+                VStack(alignment: .leading)
                 {
-                    Picker("Minutes", selection: $timeSpentMinutes)
-                    {
-                        ForEach(0..<60, id: \.self)
-                        {
-                            Text("\($0) min")
-                        }
-                    }
-                    .pickerStyle(WheelPickerStyle())
-                    .frame(width: 100)
+                    Text("Time Spent (Minutes & Seconds)")
                     
-                    Picker("Seconds", selection: $timeSpentSeconds)
+                    HStack
                     {
-                        ForEach(0..<60, id: \.self)
+                        Picker("Minutes", selection: $timeSpentMinutes)
                         {
-                            Text("\($0) sec")
+                            ForEach(0..<60, id: \.self)
+                            {
+                                Text("\($0) min")
+                            }
                         }
+                        .pickerStyle(WheelPickerStyle())
+                        .frame(width: 100)
+                        
+                        Picker("Seconds", selection: $timeSpentSeconds)
+                        {
+                            ForEach(0..<60, id: \.self)
+                            {
+                                Text("\($0) sec")
+                            }
+                        }
+                        .pickerStyle(WheelPickerStyle())
+                        .frame(width: 100)
                     }
-                    .pickerStyle(WheelPickerStyle())
-                    .frame(width: 100)
+                    .padding(.top, 4)
                 }
-            }
-            
-            VStack(alignment: .leading)
-            {
-                Text("Additional Notes")
-                
-                ZStack(alignment: .topLeading)
+
+                VStack(alignment: .leading)
                 {
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.gray, lineWidth: 1)
-                        .background(RoundedRectangle(cornerRadius: 8).fill(Color.white))
+                    Text("Additional Notes")
                     
                     TextEditor(text: $additionalNotes)
-                        .padding(8) // Add padding inside the TextEditor
-                        .frame(height: 120) // Larger text box
+                        .frame(height: 120)
+                        .border(Color.gray, width: 1)
+                        .cornerRadius(8)
+                        .padding(.top, 4)
                 }
+
+                Spacer()
+
+                Button(action:
+                        {
+                    submitCalloutDetails()
+                })
+                {
+                    Text("Submit Updates")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .foregroundColor(.white)
+                        .background(Color.green)
+                        .cornerRadius(8)
+                }
+                .padding(.top, 16)
             }
-            
-            Spacer()
-            
-            Button(action:
-                    {
-                submitCalloutDetails()
-            })
-            {
-                Text("Submit Updates")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .foregroundColor(.white)
-                    .background(Color.green)
-                    .cornerRadius(8)
-            }
-            .padding(.top, 16)
+            .padding()
         }
-        .padding()
     }
     
     private func submitCalloutDetails()
@@ -113,5 +117,5 @@ struct CalloutUpdate: View
 
 #Preview
 {
-    CalloutUpdate()
+    CalloutUpdate(currentStatus: .constant("Available"))
 }

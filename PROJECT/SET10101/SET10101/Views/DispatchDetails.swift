@@ -9,71 +9,80 @@ import SwiftUI
 
 struct DispatchDetails: View
 {
+    @Binding var currentStatus: String // Shared status binding
+    
     var body: some View
     {
-        VStack(alignment: .leading, spacing: 16)
+        VStack
         {
-            Text("Dispatch Details")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .padding(.bottom, 8)
-
-            HStack
+            if currentStatus == "Available"
             {
-                Text("Patient Name:")
-                    .fontWeight(.semibold)
-                Text("John Doe")
-            }
-
-            HStack
-            {
-                Text("NHS Number:")
-                    .fontWeight(.semibold)
-                Text("123456789")
-            }
-
-            HStack
-            {
-                Text("Address:")
-                    .fontWeight(.semibold)
-                Text("123 Main Street, Edinburgh")
-            }
-
-            HStack
-            {
-                Text("Condition:")
-                    .fontWeight(.semibold)
-                Text("Chest Pain")
-            }
-
-            Spacer()
-
-            Button(action:
-            {
-                print("Start Rescue button tapped")
-                startRescue()
-            })
-            {
-                Text("Start Rescue")
-                    .frame(maxWidth: .infinity)
+                Text("Dispatch details will be here when engaged.")
+                    .font(.title)
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
                     .padding()
-                    .foregroundColor(.white)
-                    .background(Color.blue)
-                    .cornerRadius(8)
             }
-            .padding(.top, 16)
+            else
+            {
+                VStack(alignment: .leading, spacing: 16)
+                {
+                    Text("Dispatch Details")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .padding(.bottom, 8)
+
+                    HStack
+                    {
+                        Text("Patient Name:")
+                            .fontWeight(.semibold)
+                        Text("John Doe")
+                    }
+
+                    HStack
+                    {
+                        Text("NHS Number:")
+                            .fontWeight(.semibold)
+                        Text("123456789")
+                    }
+
+                    HStack
+                    {
+                        Text("Address:")
+                            .fontWeight(.semibold)
+                        Text("123 Main Street, Edinburgh")
+                    }
+
+                    HStack
+                    {
+                        Text("Condition:")
+                            .fontWeight(.semibold)
+                        Text("Chest Pain")
+                    }
+
+                    Spacer()
+
+                    Button(action:
+                    {
+                        print("Start Rescue button tapped")
+                    })
+                    {
+                        Text("Start Rescue")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .foregroundColor(.white)
+                            .background(Color.blue)
+                            .cornerRadius(8)
+                    }
+                    .padding(.top, 16)
+                }
+                .padding()
+            }
         }
-        .padding()
-    }
-    
-    private func startRescue()
-    {
-        print("Rescue started")
-        // Add backend or database logic here
     }
 }
 
 #Preview
 {
-    DispatchDetails()
+    DispatchDetails(currentStatus: .constant("Available"))
 }
