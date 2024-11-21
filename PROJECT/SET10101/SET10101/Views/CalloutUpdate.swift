@@ -39,11 +39,17 @@ struct CalloutUpdate: View
                 {
                     Text("Actions Taken")
                     
-                    TextEditor(text: $actionsTaken)
-                        .frame(height: 120)
-                        .border(Color.gray, width: 1)
-                        .cornerRadius(8)
-                        .padding(.top, 4)
+                    ZStack(alignment: .topLeading) // Align text to the top-left
+                    {
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.gray, lineWidth: 1)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(Color.white))
+                        
+                        TextEditor(text: $actionsTaken)
+                            .padding(8) // Add padding inside the editor
+                            .frame(height: 120) // Larger box
+                            .foregroundColor(.primary)
+                    }
                 }
 
                 VStack(alignment: .leading)
@@ -79,11 +85,17 @@ struct CalloutUpdate: View
                 {
                     Text("Additional Notes")
                     
-                    TextEditor(text: $additionalNotes)
-                        .frame(height: 120)
-                        .border(Color.gray, width: 1)
-                        .cornerRadius(8)
-                        .padding(.top, 4)
+                    ZStack(alignment: .topLeading) // Align text to the top-left
+                    {
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.gray, lineWidth: 1)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(Color.white))
+                        
+                        TextEditor(text: $additionalNotes)
+                            .padding(8) // Add padding inside the editor
+                            .frame(height: 120) // Larger box
+                            .foregroundColor(.primary)
+                    }
                 }
 
                 Spacer()

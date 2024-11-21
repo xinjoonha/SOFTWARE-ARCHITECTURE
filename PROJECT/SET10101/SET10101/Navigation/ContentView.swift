@@ -15,10 +15,17 @@ struct ContentView: View
     {
         TabView
         {
+            Status(currentStatus: $currentStatus)
+                .tabItem
+                {
+                    Image(systemName: "figure.mixed.cardio")
+                    Text("Status")
+                }
+            
             DispatchDetails(currentStatus: $currentStatus)
                 .tabItem
                 {
-                    Image(systemName: "list.dash")
+                    Image(systemName: "newspaper.fill")
                     Text("Dispatch")
                 }
 
@@ -27,13 +34,6 @@ struct ContentView: View
                 {
                     Image(systemName: "square.and.pencil")
                     Text("Update")
-                }
-
-            Status(currentStatus: $currentStatus)
-                .tabItem
-                {
-                    Image(systemName: "person")
-                    Text("Status")
                 }
         }
     }

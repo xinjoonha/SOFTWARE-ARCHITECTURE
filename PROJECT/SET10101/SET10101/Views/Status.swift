@@ -9,7 +9,7 @@ import SwiftUI
 
 struct Status: View
 {
-    @Binding var currentStatus: String // Shared status binding
+    @Binding var currentStatus: String
     
     var body: some View
     {
@@ -28,6 +28,8 @@ struct Status: View
                 .background(currentStatus == "Available" ? Color.green.opacity(0.2) : Color.red.opacity(0.2))
                 .cornerRadius(8)
             
+            Spacer()
+            
             Button(action:
             {
                 toggleStatus()
@@ -41,8 +43,6 @@ struct Status: View
                     .cornerRadius(8)
             }
             .padding(.top, 16)
-            
-            Spacer()
         }
         .padding()
     }
