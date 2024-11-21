@@ -13,6 +13,13 @@ struct ContentView: View
     {
         TabView
         {
+            Status()
+                .tabItem
+                {
+                    Image(systemName: "figure.mixed.cardio")
+                    Text("Status")
+                }
+            
             DispatchDetails()
                 .tabItem
                 {
