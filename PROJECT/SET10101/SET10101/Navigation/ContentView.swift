@@ -15,7 +15,7 @@ struct ContentView: View
     {
         TabView
         {
-            Status(currentStatus: $currentStatus)
+            Status(currentStatus: $currentStatus, communications: Communications())
                 .tabItem
                 {
                     Image(systemName: "figure.mixed.cardio")

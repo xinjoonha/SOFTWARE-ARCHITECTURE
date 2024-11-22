@@ -10,6 +10,7 @@ import SwiftUI
 struct Status: View
 {
     @Binding var currentStatus: String
+    @StateObject var communications: Communications
     
     var body: some View
     {
@@ -32,7 +33,17 @@ struct Status: View
             
             Button(action:
             {
-                toggleStatus()
+                Task
+                {
+                    do
+                    {
+                        try await communications.toggleStatus()
+                    }
+                    catch
+                    {
+                        print("Error toggling status: \(error)")
+                    }
+                }
             })
             {
                 Text(currentStatus == "Available" ? "Set to Engaged" : "Set to Available")
@@ -46,16 +57,10 @@ struct Status: View
         }
         .padding()
     }
-    
-    private func toggleStatus()
-    {
-        // Toggle the status between "Available" and "Engaged"
-        currentStatus = (currentStatus == "Available") ? "Engaged" : "Available"
-        print("Status changed to: \(currentStatus)")
-    }
+
 }
 
 #Preview
 {
-    Status(currentStatus: .constant("Available"))
+    Status(currentStatus: .constant("Available"), communications: Communications())
 }
