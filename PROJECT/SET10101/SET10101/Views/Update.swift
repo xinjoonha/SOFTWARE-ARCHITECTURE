@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-struct CalloutUpdate: View
+struct Update: View
 {
     var vehicle: Vehicle? // Fetched vehicle information
     

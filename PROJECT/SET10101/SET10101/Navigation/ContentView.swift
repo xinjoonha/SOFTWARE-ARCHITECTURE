@@ -24,14 +24,14 @@ struct ContentView: View
                     Text("Status")
                 }
             
-            DispatchDetails(vehicle: vehicle)
+            Details(vehicle: vehicle)
                 .tabItem
                 {
                     Image(systemName: "newspaper.fill")
                     Text("Dispatch")
                 }
 
-            CalloutUpdate(vehicle: vehicle)
+            Update(vehicle: vehicle)
                 .tabItem
                 {
                     Image(systemName: "square.and.pencil")

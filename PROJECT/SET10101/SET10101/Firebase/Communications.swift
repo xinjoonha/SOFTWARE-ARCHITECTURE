@@ -13,30 +13,74 @@ import UIKit
 
 class Communications: ObservableObject
 {
-    func fetchDispatchInfo()
-    async throws
+    //
+    func fetchDispatchInfo() async throws -> (Dispatch, Patient)?
     {
-        /*
-         
-         1. check status of the oldest callout with the 'pending' status
-         2. fetch patient ID
-         3. fetch first & last name
-                  date of birth
-                  condition
-                  address
-         
-         patientId (inside callout, used to connect a patient to the callout):
-         /callouts/[callout document with a UID]/patientId
-         
-         patient information:
-         /patients/[patient document with a UID]/firstName (string)
-         /patients/[patient document with a UID]/lastName (string)
-         /patients/[patient document with a UID]/patientId (string)
-         /patients/[patient document with a UID]/dateOfBirth (timestamp)
-         /patients/[patient document with a UID]/condition (string)
-         /patients/[patient document with a UID]/address (string)
-         
-         */
+        let db = Firestore.firestore()
+        
+        do {
+            // 1. Query the oldest dispatch with 'pending' status
+            let dispatchSnapshot = try await db.collection("dispatches")
+                .whereField("status", isEqualTo: "pending")
+                .order(by: "date", descending: false)
+                .limit(to: 1)
+                .getDocuments()
+            
+            guard let dispatchDocument = dispatchSnapshot.documents.first else {
+                print("No pending dispatches found.")
+                return nil
+            }
+            
+            // Extract dispatch information
+            let dispatchData = dispatchDocument.data()
+            guard let date = (dispatchData["date"] as? Timestamp)?.dateValue(),
+                  let patientId = dispatchData["patientId"] as? String,
+                  let status = dispatchData["status"] as? String else {
+                print("Invalid dispatch data format: \(dispatchData)")
+                return nil
+            }
+            
+            let dispatch = Dispatch(
+                id: dispatchDocument.documentID,
+                date: date,
+                patientId: patientId,
+                status: status
+            )
+            
+            // 2. Fetch the patient information using patientId
+            let patientSnapshot = try await db.collection("patients")
+                .whereField("patientId", isEqualTo: patientId)
+                .limit(to: 1)
+                .getDocuments()
+            
+            guard let patientDocument = patientSnapshot.documents.first else {
+                print("No patient found for patientId: \(patientId)")
+                return nil
+            }
+            
+            // Extract patient information
+            let patientData = patientDocument.data()
+            guard let firstName = patientData["firstName"] as? String,
+                  let lastName = patientData["lastName"] as? String,
+                  let dateOfBirth = (patientData["dateOfBirth"] as? Timestamp)?.dateValue(),
+                  let address = patientData["address"] as? String else {
+                print("Invalid patient data format: \(patientData)")
+                return nil
+            }
+            
+            let patient = Patient(
+                id: patientDocument.documentID,
+                firstName: firstName,
+                lastName: lastName,
+                dateOfBirth: dateOfBirth,
+                address: address
+            )
+            
+            return (dispatch, patient)
+        } catch {
+            print("Error fetching dispatch or patient information: \(error)")
+            throw error
+        }
     }
     
     func startRescue()
@@ -102,6 +146,7 @@ class Communications: ObservableObject
         print("TOGGLESTATUS.SWIFT:SUCCESSFULLY-UPDATED-STATUS")
     }
     
+    //
     func fetchStatus()
     async throws -> Vehicle
     {
