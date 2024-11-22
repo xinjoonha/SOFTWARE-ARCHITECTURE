@@ -14,4 +14,5 @@ struct Dispatch: Identifiable, Codable
     let date: Date
     let patientId: String //patient's ID
     let status: String
+    let condition: String
 }

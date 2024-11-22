@@ -35,6 +35,7 @@ class Communications: ObservableObject
             let dispatchData = dispatchDocument.data()
             guard let date = (dispatchData["date"] as? Timestamp)?.dateValue(),
                   let patientId = dispatchData["patientId"] as? String,
+                  let condition = dispatchData["condition"] as? String,
                   let status = dispatchData["status"] as? String else {
                 print("Invalid dispatch data format: \(dispatchData)")
                 return nil
@@ -44,7 +45,8 @@ class Communications: ObservableObject
                 id: dispatchDocument.documentID,
                 date: date,
                 patientId: patientId,
-                status: status
+                status: status,
+                condition: condition
             )
             
             // 2. Fetch the patient information using patientId
