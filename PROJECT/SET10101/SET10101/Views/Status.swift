@@ -9,8 +9,10 @@ import SwiftUI
 
 struct Status: View
 {
-    @Binding var currentStatus: String
-    @StateObject var communications: Communications
+    var vehicle: Vehicle? // Fetched vehicle information
+    var isLoading: Bool
+    var communications: Communications
+    var onRefresh: () async -> Void // Callback to refresh vehicle data
     
     var body: some View
     {
@@ -21,46 +23,55 @@ struct Status: View
                 .fontWeight(.bold)
                 .padding(.bottom, 8)
             
-            Text(currentStatus)
-                .font(.title)
-                .foregroundColor(currentStatus == "Available" ? .green : .red)
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(currentStatus == "Available" ? Color.green.opacity(0.2) : Color.red.opacity(0.2))
-                .cornerRadius(8)
-            
-            Spacer()
-            
-            Button(action:
+            if isLoading
             {
-                Task
-                {
-                    do
-                    {
-                        try await communications.toggleStatus()
-                    }
-                    catch
-                    {
-                        print("Error toggling status: \(error)")
-                    }
-                }
-            })
-            {
-                Text(currentStatus == "Available" ? "Set to Engaged" : "Set to Available")
-                    .frame(maxWidth: .infinity)
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle())
                     .padding()
-                    .foregroundColor(.white)
-                    .background(currentStatus == "Available" ? Color.red : Color.green)
-                    .cornerRadius(8)
             }
-            .padding(.top, 16)
+            else if let vehicle = vehicle
+            {
+                Text(vehicle.status.capitalized)
+                    .font(.title)
+                    .foregroundColor(vehicle.status == "available" ? .green : .red)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(vehicle.status == "available" ? Color.green.opacity(0.2) : Color.red.opacity(0.2))
+                    .cornerRadius(8)
+                
+                Spacer()
+                
+                Button(action:
+                {
+                    Task
+                    {
+                        do
+                        {
+                            try await communications.toggleStatus()
+                            await onRefresh() // Refresh the status after toggling
+                        }
+                        catch
+                        {
+                            print("Error toggling status: \(error)")
+                        }
+                    }
+                })
+                {
+                    Text(vehicle.status == "available" ? "Set to Engaged" : "Set to Available")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .foregroundColor(.white)
+                        .background(vehicle.status == "available" ? Color.red : Color.green)
+                        .cornerRadius(8)
+                }
+                .padding(.top, 16)
+            }
+            else
+            {
+                Text("Unable to fetch vehicle information.")
+                    .foregroundColor(.red)
+            }
         }
         .padding()
     }
-
-}
-
-#Preview
-{
-    Status(currentStatus: .constant("Available"), communications: Communications())
 }

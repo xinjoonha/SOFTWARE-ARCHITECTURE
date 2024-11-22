@@ -6,10 +6,9 @@
 //
 
 import SwiftUI
-
 struct CalloutUpdate: View
 {
-    @Binding var currentStatus: String // Shared status binding
+    var vehicle: Vehicle? // Fetched vehicle information
     
     @State private var actionsTaken: String = ""
     @State private var timeSpentMinutes: Int = 0
@@ -18,7 +17,7 @@ struct CalloutUpdate: View
     
     var body: some View
     {
-        if currentStatus == "Available"
+        if let status = vehicle?.status, status == "available"
         {
             Text("Dispatch details will be here when engaged.")
                 .font(.title)
@@ -39,15 +38,15 @@ struct CalloutUpdate: View
                 {
                     Text("Actions Taken")
                     
-                    ZStack(alignment: .topLeading) // Align text to the top-left
+                    ZStack(alignment: .topLeading)
                     {
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.gray, lineWidth: 1)
                             .background(RoundedRectangle(cornerRadius: 8).fill(Color.white))
                         
                         TextEditor(text: $actionsTaken)
-                            .padding(8) // Add padding inside the editor
-                            .frame(height: 120) // Larger box
+                            .padding(8)
+                            .frame(height: 120)
                             .foregroundColor(.primary)
                     }
                 }
@@ -85,15 +84,15 @@ struct CalloutUpdate: View
                 {
                     Text("Additional Notes")
                     
-                    ZStack(alignment: .topLeading) // Align text to the top-left
+                    ZStack(alignment: .topLeading)
                     {
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.gray, lineWidth: 1)
                             .background(RoundedRectangle(cornerRadius: 8).fill(Color.white))
                         
                         TextEditor(text: $additionalNotes)
-                            .padding(8) // Add padding inside the editor
-                            .frame(height: 120) // Larger box
+                            .padding(8)
+                            .frame(height: 120)
                             .foregroundColor(.primary)
                     }
                 }
@@ -101,7 +100,7 @@ struct CalloutUpdate: View
                 Spacer()
 
                 Button(action:
-                        {
+                {
                     submitCalloutDetails()
                 })
                 {
@@ -125,9 +124,4 @@ struct CalloutUpdate: View
         print("Additional Notes: \(additionalNotes)")
         // Add backend or database logic here
     }
-}
-
-#Preview
-{
-    CalloutUpdate(currentStatus: .constant("Available"))
 }

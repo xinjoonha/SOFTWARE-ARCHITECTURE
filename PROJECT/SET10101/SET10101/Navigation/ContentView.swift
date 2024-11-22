@@ -9,32 +9,56 @@ import SwiftUI
 
 struct ContentView: View
 {
-    @State private var currentStatus: String = "Available" // Shared status
+    @StateObject private var communications = Communications() // Shared across tabs
+    @State private var vehicle: Vehicle? // Vehicle fetched from Firestore
+    @State private var isLoading: Bool = true // Loading state for fetching vehicle data
     
     var body: some View
     {
         TabView
         {
-            Status(currentStatus: $currentStatus, communications: Communications())
+            Status(vehicle: vehicle, isLoading: isLoading, communications: communications, onRefresh: fetchVehicleStatus)
                 .tabItem
                 {
                     Image(systemName: "figure.mixed.cardio")
                     Text("Status")
                 }
             
-            DispatchDetails(currentStatus: $currentStatus)
+            DispatchDetails(vehicle: vehicle)
                 .tabItem
                 {
                     Image(systemName: "newspaper.fill")
                     Text("Dispatch")
                 }
 
-            CalloutUpdate(currentStatus: $currentStatus)
+            CalloutUpdate(vehicle: vehicle)
                 .tabItem
                 {
                     Image(systemName: "square.and.pencil")
                     Text("Update")
                 }
         }
+        .onAppear
+        {
+            Task
+            {
+                await fetchVehicleStatus()
+            }
+        }
+    }
+    
+    private func fetchVehicleStatus() async
+    {
+        isLoading = true
+        do
+        {
+            vehicle = try await communications.fetchStatus() // Fetch the vehicle data
+        }
+        catch
+        {
+            print("Error fetching vehicle status: \(error)")
+            vehicle = nil
+        }
+        isLoading = false
     }
 }

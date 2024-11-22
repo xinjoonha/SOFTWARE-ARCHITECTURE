@@ -9,13 +9,13 @@ import SwiftUI
 
 struct DispatchDetails: View
 {
-    @Binding var currentStatus: String // Shared status binding
+    var vehicle: Vehicle? // Fetched vehicle information
     
     var body: some View
     {
         VStack
         {
-            if currentStatus == "Available"
+            if let status = vehicle?.status, status == "available"
             {
                 Text("Dispatch details will be here when engaged.")
                     .font(.title)
@@ -80,9 +80,4 @@ struct DispatchDetails: View
             }
         }
     }
-}
-
-#Preview
-{
-    DispatchDetails(currentStatus: .constant("Available"))
 }
