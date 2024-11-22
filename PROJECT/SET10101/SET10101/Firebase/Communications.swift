@@ -14,7 +14,8 @@ import UIKit
 class Communications: ObservableObject
 {
     //
-    func fetchDispatchInfo() async throws -> (Dispatch, Patient)?
+    func fetchDispatchInfo()
+    async throws -> (Dispatch, Patient)?
     {
         let db = Firestore.firestore()
         
@@ -85,28 +86,57 @@ class Communications: ObservableObject
         }
     }
     
-    func startRescue()
+    //
+    func startRescue(dispatch: Dispatch)
     async throws
     {
-        /*
-         
-         1. update callout status to 'active'
-         2. update vehicle status to 'engaged'
-         3. start sending GPS location every 30 seconds
-         
-         sending GPS location is writing coordinates to firebase database
-         
-         callout status path:
-         /callouts/[callout document with a UID]/status
-         
-         vehicle status path:
-         /vehicles/[vehicle document with a UID]/status
-         
-         coordinates path:
-         /vehicles/[vehicle document with a UID]/coordinates
-         
-         */
+        let db = Firestore.firestore()
+
+        // Debugging log to ensure the correct ID is being used
+        print("Dispatch ID: \(dispatch.id)")
+
+        do {
+            // Update dispatch status to 'active'
+            try await db.collection("dispatches")
+                .document(dispatch.id) // Use the correct document ID
+                .updateData(["status": "active"])
+
+            print("Successfully updated dispatch status to 'active'")
+            
+            // Example: Start sending GPS location every 30 seconds
+            Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { timer in
+                Task {
+                    do {
+                        // Replace with actual GPS coordinates retrieval
+                        let coordinates = GeoPoint(latitude: 37.7749, longitude: -122.4194)
+                        try await db.collection("vehicles").document("vehicleID").updateData([
+                            "coordinates": coordinates
+                        ])
+                        print("Updated GPS coordinates: \(coordinates)")
+                    } catch {
+                        print("Failed to update GPS coordinates: \(error)")
+                        timer.invalidate()
+                    }
+                }
+            }
+        } catch {
+            print("Error updating dispatch status: \(error)")
+            throw error
+        }
     }
+
+
+    // Helper methods to simulate GPS location
+    private func getCurrentLatitude() -> Double {
+        // Simulate getting current latitude
+        return 55.9533 // Replace with actual GPS data
+    }
+
+    private func getCurrentLongitude() -> Double {
+        // Simulate getting current longitude
+        return -3.1883 // Replace with actual GPS data
+    }
+
     
     func finishRescue()
     async throws

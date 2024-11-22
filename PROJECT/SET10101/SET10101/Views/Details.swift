@@ -73,9 +73,18 @@ struct Details: View
                     Spacer()
 
                     Button(action: {
-                        print("Start Rescue button tapped")
-                    })
-                    {
+                        guard let dispatch = self.dispatch else {
+                            print("No dispatch available to start rescue.")
+                            return
+                        }
+                        Task {
+                            do {
+                                try await communications.startRescue(dispatch: dispatch)
+                            } catch {
+                                print("Error starting rescue: \(error)")
+                            }
+                        }
+                    }) {
                         Text("Start Rescue")
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -84,6 +93,8 @@ struct Details: View
                             .cornerRadius(8)
                     }
                     .padding(.top, 16)
+
+
                 }
                 .padding()
             }
