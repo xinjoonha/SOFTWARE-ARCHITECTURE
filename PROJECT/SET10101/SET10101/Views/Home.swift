@@ -123,7 +123,7 @@ struct Home: View
                                 .frame(maxWidth: .infinity)
                                 .padding()
                                 .foregroundColor(.white)
-                                .background(Color.green)
+                                .background(Color.blue)
                                 .cornerRadius(8)
                         }
                         .sheet(isPresented: $showUpdateSheet)
@@ -142,7 +142,6 @@ struct Home: View
                                 .background(Color.green)
                                 .cornerRadius(8)
                         }
-                        .padding(.top, 16)
                         .alert(isPresented: $showFinishRescueConfirmation)
                         {
                             Alert(
