@@ -207,7 +207,9 @@ struct Home: View
     }
 
     // Fetch Dispatch and Patient Details
-    private func fetchDispatchAndPatientDetails() async {
+    private func fetchDispatchAndPatientDetails()
+    async
+    {
         isLoading = true
         do {
             if let result = try await communications.fetchDispatchInfo() {

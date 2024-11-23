@@ -167,7 +167,37 @@ class Communications: ObservableObject
         }
     }
 
-    
+    //
+    func fetchDispatchDetails()
+    async throws -> (actionsTaken: String, timeSpent: String, additionalNotes: String)
+    {
+        let vehicleId = "001" // The vehicle ID to search for
+
+        let dispatchesRef = Firestore.firestore().collection("dispatches")
+        
+        // Query the 'dispatches' collection for documents where 'vehicleId' == '001'
+        let query = dispatchesRef.whereField("vehicleId", isEqualTo: vehicleId)
+        
+        do {
+            let querySnapshot = try await query.getDocuments()
+            
+            guard let document = querySnapshot.documents.first else {
+                throw NSError(domain: "FETCH_DISPATCH_DETAILS", code: 0, userInfo: [NSLocalizedDescriptionKey: "No dispatch found for vehicle ID \(vehicleId)"])
+            }
+            
+            let data = document.data()
+            
+            let actionsTaken = data["actionsTaken"] as? String ?? ""
+            let timeSpent = data["timeSpent"] as? String ?? "0,0"
+            let additionalNotes = data["additionalNotes"] as? String ?? ""
+            
+            return (actionsTaken, timeSpent, additionalNotes)
+        } catch {
+            print("Error fetching dispatch details: \(error)")
+            throw error
+        }
+    }
+
     
     
     
