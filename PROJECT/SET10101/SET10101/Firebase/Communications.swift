@@ -189,9 +189,12 @@ class Communications: ObservableObject
             
             let actionsTaken = data["actionsTaken"] as? String ?? ""
             let timeSpent = data["timeSpent"] as? String ?? "0,0"
+            print("Fetched timeSpent: \(timeSpent)")
+            
             let additionalNotes = data["additionalNotes"] as? String ?? ""
             
             return (actionsTaken, timeSpent, additionalNotes)
+
         } catch {
             print("Error fetching dispatch details: \(error)")
             throw error
