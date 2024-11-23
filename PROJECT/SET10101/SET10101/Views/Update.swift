@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+
 struct Update: View
 {
     var vehicle: Vehicle? // Fetched vehicle information
@@ -29,14 +30,14 @@ struct Update: View
         {
             VStack(alignment: .leading, spacing: 16)
             {
-                Text("Call-Out Update")
+                Text("Add details")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding(.bottom, 8)
 
                 VStack(alignment: .leading)
                 {
-                    Text("Actions Taken")
+                    Text("Actions taken")
                     
                     ZStack(alignment: .topLeading)
                     {
@@ -53,7 +54,7 @@ struct Update: View
 
                 VStack(alignment: .leading)
                 {
-                    Text("Time Spent (Minutes & Seconds)")
+                    Text("Time spent (minutes & seconds)")
                     
                     HStack
                     {
@@ -82,7 +83,7 @@ struct Update: View
 
                 VStack(alignment: .leading)
                 {
-                    Text("Additional Notes")
+                    Text("Additional notes")
                     
                     ZStack(alignment: .topLeading)
                     {
@@ -104,7 +105,7 @@ struct Update: View
                     submitCalloutDetails()
                 })
                 {
-                    Text("Submit Updates")
+                    Text("Submit updates")
                         .frame(maxWidth: .infinity)
                         .padding()
                         .foregroundColor(.white)
@@ -119,9 +120,9 @@ struct Update: View
     
     private func submitCalloutDetails()
     {
-        print("Actions Taken: \(actionsTaken)")
-        print("Time Spent: \(timeSpentMinutes) min, \(timeSpentSeconds) sec")
-        print("Additional Notes: \(additionalNotes)")
+        print("Actions taken: \(actionsTaken)")
+        print("Time spent: \(timeSpentMinutes) min, \(timeSpentSeconds) sec")
+        print("Additional notes: \(additionalNotes)")
         // Add backend or database logic here
     }
 }

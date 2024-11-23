@@ -18,18 +18,18 @@ struct ContentView: View
         TabView
         {
             
-            Details(vehicle: vehicle)
+            Home(vehicle: vehicle)
                 .tabItem
                 {
                     Image(systemName: "newspaper.fill")
                     Text("Dispatch")
                 }
 
-            Update(vehicle: vehicle)
+            Aknowledgements()
                 .tabItem
                 {
-                    Image(systemName: "square.and.pencil")
-                    Text("Update")
+                    Image(systemName: "person.fill")
+                    Text("Aknowledgements")
                 }
         }
         .onAppear

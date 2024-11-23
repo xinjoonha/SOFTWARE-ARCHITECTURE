@@ -7,49 +7,62 @@
 
 import SwiftUI
 
-struct Details: View {
+struct Home: View
+{
     var vehicle: Vehicle?
+    
     @StateObject private var communications = Communications()
+    
     @State private var dispatch: Dispatch? = nil
     @State private var patient: Patient? = nil
     @State private var isLoading: Bool = true
-
-    // State variables for alerts
+    
     @State private var showStartRescueConfirmation = false
     @State private var showFinishRescueConfirmation = false
+    
+    @State private var showUpdateSheet = false
 
-    var body: some View {
-        VStack {
-            if isLoading {
-                ProgressView("Loading Dispatch Details...")
+    var body: some View
+    {
+        VStack
+        {
+            if isLoading
+            {
+                ProgressView("Loading dispatch details...")
                     .font(.title)
                     .padding()
-            } else if let dispatch = dispatch, let patient = patient {
+            }
+            else if let dispatch = dispatch, let patient = patient
+            {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Dispatch Details")
+                    Text("Dispatch details")
                         .font(.largeTitle)
                         .fontWeight(.bold)
                         .padding(.bottom, 8)
 
-                    HStack {
-                        Text("Patient Name:")
+                    HStack
+                    {
+                        Text("Patient name:")
                             .fontWeight(.semibold)
                         Text("\(patient.firstName) \(patient.lastName)")
                     }
 
-                    HStack {
-                        Text("Date of Birth:")
+                    HStack
+                    {
+                        Text("Date of birth:")
                             .fontWeight(.semibold)
                         Text(patient.dateOfBirth.formatted(date: .long, time: .omitted))
                     }
 
-                    HStack {
+                    HStack
+                    {
                         Text("Address:")
                             .fontWeight(.semibold)
                         Text(patient.address)
                     }
 
-                    HStack {
+                    HStack
+                    {
                         Text("Condition:")
                             .fontWeight(.semibold)
                         Text(dispatch.condition)
@@ -58,12 +71,13 @@ struct Details: View {
                     Spacer()
 
                     // Button depends on dispatch status
-                    if dispatch.status == "pending" {
+                    if dispatch.status == "pending"
+                    {
                         Button(action: {
                             // Show confirmation alert
                             self.showStartRescueConfirmation = true
                         }) {
-                            Text("Start Rescue")
+                            Text("Start rescue")
                                 .frame(maxWidth: .infinity)
                                 .padding()
                                 .foregroundColor(.white)
@@ -74,7 +88,7 @@ struct Details: View {
                         // Confirmation Alert for Start Rescue
                         .alert(isPresented: $showStartRescueConfirmation) {
                             Alert(
-                                title: Text("Start Rescue"),
+                                title: Text("Start rescue"),
                                 message: Text("Are you sure you want to start the rescue?"),
                                 primaryButton: .default(Text("Start")) {
                                     guard let dispatch = self.dispatch,
@@ -98,12 +112,30 @@ struct Details: View {
                                 secondaryButton: .cancel()
                             )
                         }
-                    } else if dispatch.status == "active" {
+                    }
+                    else if dispatch.status == "active"
+                    {
+                        Button(action: {
+                            // Show confirmation alert
+                            self.showUpdateSheet = true
+                        }) {
+                            Text("Add dispatch details")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .foregroundColor(.white)
+                                .background(Color.green)
+                                .cornerRadius(8)
+                        }
+                        .sheet(isPresented: $showUpdateSheet)
+                        {
+                            Update()
+                        }
+                        
                         Button(action: {
                             // Show confirmation alert
                             self.showFinishRescueConfirmation = true
                         }) {
-                            Text("Finish Rescue")
+                            Text("Finish rescue")
                                 .frame(maxWidth: .infinity)
                                 .padding()
                                 .foregroundColor(.white)
@@ -111,8 +143,8 @@ struct Details: View {
                                 .cornerRadius(8)
                         }
                         .padding(.top, 16)
-                        // Confirmation Alert for Finish Rescue
-                        .alert(isPresented: $showFinishRescueConfirmation) {
+                        .alert(isPresented: $showFinishRescueConfirmation)
+                        {
                             Alert(
                                 title: Text("Finish Rescue"),
                                 message: Text("Are you sure you want to finish the rescue?"),
