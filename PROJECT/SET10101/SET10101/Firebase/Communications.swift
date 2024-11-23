@@ -18,73 +18,95 @@ class Communications: ObservableObject
     async throws -> (Dispatch, Patient)?
     {
         let db = Firestore.firestore()
-        
+        let vehicleId = "001" // Replace with your actual vehicleId or fetch it dynamically if needed
+
         do {
-            // 1. Query the oldest dispatch with 'pending' status
-            let dispatchSnapshot = try await db.collection("dispatches")
-                .whereField("status", isEqualTo: "pending")
-                .order(by: "date", descending: false)
+            // 1. Check if there's an active dispatch assigned to this vehicle
+            let activeDispatchSnapshot = try await db.collection("dispatches")
+                .whereField("status", isEqualTo: "active")
+                .whereField("vehicleId", isEqualTo: vehicleId)
                 .limit(to: 1)
                 .getDocuments()
             
-            guard let dispatchDocument = dispatchSnapshot.documents.first else {
-                print("No pending dispatches found.")
-                return nil
+            if let dispatchDocument = activeDispatchSnapshot.documents.first {
+                print("Found an active dispatch for vehicleId: \(vehicleId)")
+                // Extract and return the dispatch and patient information
+                return try await extractDispatchAndPatient(from: dispatchDocument)
+            } else {
+                print("No active dispatch found for vehicleId: \(vehicleId). Checking for pending dispatches.")
+                // 2. If no active dispatch, query the oldest pending dispatch
+                let pendingDispatchSnapshot = try await db.collection("dispatches")
+                    .whereField("status", isEqualTo: "pending")
+                    .order(by: "date", descending: false)
+                    .limit(to: 1)
+                    .getDocuments()
+                
+                guard let dispatchDocument = pendingDispatchSnapshot.documents.first else {
+                    print("No pending dispatches found.")
+                    return nil
+                }
+                
+                // Extract and return the dispatch and patient information
+                return try await extractDispatchAndPatient(from: dispatchDocument)
             }
-            
-            // Extract dispatch information
-            let dispatchData = dispatchDocument.data()
-            guard let date = (dispatchData["date"] as? Timestamp)?.dateValue(),
-                  let patientId = dispatchData["patientId"] as? String,
-                  let condition = dispatchData["condition"] as? String,
-                  let status = dispatchData["status"] as? String else {
-                print("Invalid dispatch data format: \(dispatchData)")
-                return nil
-            }
-            
-            let dispatch = Dispatch(
-                id: dispatchDocument.documentID,
-                date: date,
-                patientId: patientId,
-                status: status,
-                condition: condition
-            )
-            
-            // 2. Fetch the patient information using patientId
-            let patientSnapshot = try await db.collection("patients")
-                .whereField("patientId", isEqualTo: patientId)
-                .limit(to: 1)
-                .getDocuments()
-            
-            guard let patientDocument = patientSnapshot.documents.first else {
-                print("No patient found for patientId: \(patientId)")
-                return nil
-            }
-            
-            // Extract patient information
-            let patientData = patientDocument.data()
-            guard let firstName = patientData["firstName"] as? String,
-                  let lastName = patientData["lastName"] as? String,
-                  let dateOfBirth = (patientData["dateOfBirth"] as? Timestamp)?.dateValue(),
-                  let address = patientData["address"] as? String else {
-                print("Invalid patient data format: \(patientData)")
-                return nil
-            }
-            
-            let patient = Patient(
-                id: patientDocument.documentID,
-                firstName: firstName,
-                lastName: lastName,
-                dateOfBirth: dateOfBirth,
-                address: address
-            )
-            
-            return (dispatch, patient)
         } catch {
             print("Error fetching dispatch or patient information: \(error)")
             throw error
         }
     }
+
+    // Helper function to extract dispatch and patient information
+    private func extractDispatchAndPatient(from dispatchDocument: DocumentSnapshot) async throws -> (Dispatch, Patient) {
+        let db = Firestore.firestore()
+        let dispatchData = dispatchDocument.data() ?? [:]
+
+        guard let date = (dispatchData["date"] as? Timestamp)?.dateValue(),
+              let patientId = dispatchData["patientId"] as? String,
+              let condition = dispatchData["condition"] as? String,
+              let status = dispatchData["status"] as? String else {
+            print("Invalid dispatch data format: \(dispatchData)")
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid dispatch data format"])
+        }
+        
+        let dispatch = Dispatch(
+            id: dispatchDocument.documentID,
+            date: date,
+            patientId: patientId,
+            status: status,
+            condition: condition
+        )
+        
+        // Fetch the patient information using patientId
+        let patientSnapshot = try await db.collection("patients")
+            .whereField("patientId", isEqualTo: patientId)
+            .limit(to: 1)
+            .getDocuments()
+        
+        guard let patientDocument = patientSnapshot.documents.first else {
+            print("No patient found for patientId: \(patientId)")
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No patient found"])
+        }
+        
+        let patientData = patientDocument.data()
+        guard let firstName = patientData["firstName"] as? String,
+              let lastName = patientData["lastName"] as? String,
+              let dateOfBirth = (patientData["dateOfBirth"] as? Timestamp)?.dateValue(),
+              let address = patientData["address"] as? String else {
+            print("Invalid patient data format: \(patientData)")
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid patient data format"])
+        }
+        
+        let patient = Patient(
+            id: patientDocument.documentID,
+            firstName: firstName,
+            lastName: lastName,
+            dateOfBirth: dateOfBirth,
+            address: address
+        )
+        
+        return (dispatch, patient)
+    }
+
     
     //
     func startRescue(dispatch: Dispatch)
@@ -96,48 +118,53 @@ class Communications: ObservableObject
         print("Dispatch ID: \(dispatch.id)")
 
         do {
-            // Update dispatch status to 'active'
+            // Update dispatch status to 'active' and add vehicleId '001'
             try await db.collection("dispatches")
-                .document(dispatch.id) // Use the correct document ID
-                .updateData(["status": "active"])
+                .document(dispatch.id)
+                .updateData([
+                    "status": "active",
+                    "vehicleId": "001"
+                ])
 
-            print("Successfully updated dispatch status to 'active'")
-            
+            print("Successfully updated dispatch with status 'active' and vehicleId '001'")
+
             // Example: Start sending GPS location every 30 seconds
             Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { timer in
                 Task {
                     do {
-                        // Replace with actual GPS coordinates retrieval
-                        let coordinates = GeoPoint(latitude: 37.7749, longitude: -122.4194)
-                        try await db.collection("vehicles").document("vehicleID").updateData([
+                        let coordinates = GeoPoint(latitude: 37.7749, longitude: -122.4194) // Replace with actual coordinates
+                        try await db.collection("vehicles").document("001").updateData([
                             "coordinates": coordinates
                         ])
-                        print("Updated GPS coordinates: \(coordinates)")
+                        print("Coordinates successfully updated to Firestore: \(coordinates)")
                     } catch {
-                        print("Failed to update GPS coordinates: \(error)")
-                        timer.invalidate()
+                        print("Error updating coordinates: \(error.localizedDescription)")
                     }
                 }
             }
+
         } catch {
             print("Error updating dispatch status: \(error)")
             throw error
         }
     }
 
-
-    // Helper methods to simulate GPS location
-    private func getCurrentLatitude() -> Double {
+    //
+    private func getCurrentLatitude()
+    -> Double
+    {
         // Simulate getting current latitude
         return 55.9533 // Replace with actual GPS data
     }
 
-    private func getCurrentLongitude() -> Double {
+    private func getCurrentLongitude()
+    -> Double
+    {
         // Simulate getting current longitude
         return -3.1883 // Replace with actual GPS data
     }
 
-    
+    //
     func finishRescue()
     async throws
     {

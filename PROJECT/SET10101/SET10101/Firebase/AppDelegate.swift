@@ -12,12 +12,9 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 {
     var orientationLock = UIInterfaceOrientationMask.portrait
     
-//    func application(_ application: UIApplication,
-//                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool
-//    {
-//        // Initialize Firebase
-//        FirebaseApp.configure()
-//        
-//        return true
-//    }
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool
+    {
+            FirebaseApp.configure()
+            return true
+    }
 }

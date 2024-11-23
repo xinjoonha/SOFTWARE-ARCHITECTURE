@@ -15,8 +15,7 @@ struct SET10101App: App
     
     init()
     {
-        FirebaseApp.configure()
-        FirebaseConfiguration.shared.setLoggerLevel(.debug)
+        FirebaseConfiguration.shared.setLoggerLevel(.error)
     }
     
     var body: some Scene
