@@ -35,6 +35,8 @@ document.getElementById('find-by-nhs-bottom-text').style.display = 'none';
 document.getElementById('create-patient-bottom-text').style.display = 'none';
 document.getElementById('refreshUIButton').style.display = 'none';
 
+// Variable to store the found patient's NHS number
+let foundPatientId = null;
 
 // Function to generate a random NHS number
 function generateRandomNHSNumber() {
@@ -92,6 +94,9 @@ function resetUI() {
 
     // Clear bottom text
     document.getElementById('find-by-nhs-bottom-text').innerText = '';
+
+    // Reset foundPatientId
+    foundPatientId = null;
 }
 
 document.getElementById('findByNHSButton').addEventListener('click', async function(event) {
@@ -145,6 +150,9 @@ document.getElementById('findByNHSButton').addEventListener('click', async funct
             addressField.disabled = false;
             dateOfBirthField.disabled = false;
 
+            // Reset foundPatientId
+            foundPatientId = null;
+
             return;
         } else {
             // Patient found
@@ -184,6 +192,9 @@ document.getElementById('findByNHSButton').addEventListener('click', async funct
                 createPatientButton.style.display = 'none';
                 existingPatientButton.style.display = 'block';
                 refreshUIButton.style.display = 'block';
+
+                // Store the found patientId
+                foundPatientId = patientId;
             });
         }
     } catch (error) {
@@ -257,6 +268,45 @@ document.getElementById('createPatientButton').addEventListener('click', async f
     } catch (error) {
         console.error('Error creating patient and dispatch:', error);
         alert('An error occurred while creating the patient and dispatch.');
+    }
+});
+
+// Add event listener for the existing patient new dispatch button
+document.getElementById('existingPatientNewDispatchButton').addEventListener('click', async function(event) {
+    event.preventDefault();
+
+    // Get the condition from the 'condition-field'
+    const condition = document.getElementById('condition-field').value.trim();
+
+    // Validate that condition is not empty
+    if (!condition) {
+        alert('Please enter a condition.');
+        return;
+    }
+
+    if (!foundPatientId) {
+        alert('No patient selected.');
+        return;
+    }
+
+    try {
+        // Create dispatch document
+        const dispatchData = {
+            date: Timestamp.now(),
+            patientId: foundPatientId,
+            status: 'pending',
+            condition
+        };
+
+        await addDoc(collection(db, 'dispatches'), dispatchData);
+
+        alert('Dispatch created successfully.');
+
+        // Reset the UI
+        resetUI();
+    } catch (error) {
+        console.error('Error creating dispatch:', error);
+        alert('An error occurred while creating the dispatch.');
     }
 });
 
