@@ -169,7 +169,7 @@ class Communications: ObservableObject
 
     //
     func fetchDispatchDetails()
-    async throws -> (actionsTaken: String, timeSpent: String, additionalNotes: String)
+    async throws -> (dispatchId: String, actionsTaken: String, timeSpent: String, additionalNotes: String)
     {
         let vehicleId = "001" // The vehicle ID to search for
 
@@ -185,6 +185,7 @@ class Communications: ObservableObject
                 throw NSError(domain: "FETCH_DISPATCH_DETAILS", code: 0, userInfo: [NSLocalizedDescriptionKey: "No dispatch found for vehicle ID \(vehicleId)"])
             }
             
+            let dispatchId = document.documentID
             let data = document.data()
             
             let actionsTaken = data["actionsTaken"] as? String ?? ""
@@ -193,7 +194,7 @@ class Communications: ObservableObject
             
             let additionalNotes = data["additionalNotes"] as? String ?? ""
             
-            return (actionsTaken, timeSpent, additionalNotes)
+            return (dispatchId, actionsTaken, timeSpent, additionalNotes)
 
         } catch {
             print("Error fetching dispatch details: \(error)")
@@ -201,7 +202,27 @@ class Communications: ObservableObject
         }
     }
 
-    
+    //
+    func updateDispatchDetails(dispatchId: String, actionsTaken: String, timeSpent: String, additionalNotes: String)
+    async throws
+    {
+        let db = Firestore.firestore()
+        let dispatchRef = db.collection("dispatches").document(dispatchId)
+        
+        do {
+            // Update or create the fields in the dispatch document
+            try await dispatchRef.setData([
+                "actionsTaken": actionsTaken,
+                "timeSpent": timeSpent,
+                "additionalNotes": additionalNotes
+            ], merge: true) // Using merge to avoid overwriting existing data
+            print("Dispatch details updated successfully.")
+        } catch {
+            print("Error updating dispatch details: \(error)")
+            throw error
+        }
+    }
+
     
     
     

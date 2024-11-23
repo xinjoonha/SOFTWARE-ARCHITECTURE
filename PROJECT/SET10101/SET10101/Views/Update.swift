@@ -14,7 +14,8 @@ struct Update: View {
     @State private var timeSpentMinutes: Int = 0
     @State private var timeSpentSeconds: Int = 0
     @State private var additionalNotes: String = ""
-    @State private var isLoading: Bool = true // To handle loading state
+    @State private var isLoading: Bool = true // To handle loading state]
+    @State private var dispatchId: String = ""
     
     @StateObject private var communications = Communications() // Instance of Communications class
     
@@ -122,8 +123,10 @@ struct Update: View {
         }
     }
     
-    // Function to fetch dispatch details
-    private func fetchDispatchDetails() async {
+    //
+    private func fetchDispatchDetails()
+    async
+    {
         isLoading = true
         do {
             // Fetch dispatch details from Communications class
@@ -136,6 +139,7 @@ struct Update: View {
             
             // Update state variables on the main thread
             DispatchQueue.main.async {
+                self.dispatchId = dispatchDetails.dispatchId
                 self.actionsTaken = dispatchDetails.actionsTaken
                 self.timeSpentMinutes = minutes
                 self.timeSpentSeconds = seconds
@@ -150,10 +154,28 @@ struct Update: View {
         }
     }
     
-    private func submitCalloutDetails() {
+    //
+    private func submitCalloutDetails()
+    {
         print("Actions Taken: \(actionsTaken)")
         print("Time Spent: \(timeSpentMinutes) min, \(timeSpentSeconds) sec")
         print("Additional Notes: \(additionalNotes)")
-        // Add backend or database logic here
+        
+        let timeSpent = "\(timeSpentMinutes),\(timeSpentSeconds)"
+        
+        Task {
+            do {
+                try await communications.updateDispatchDetails(
+                    dispatchId: dispatchId,
+                    actionsTaken: actionsTaken,
+                    timeSpent: timeSpent,
+                    additionalNotes: additionalNotes
+                )
+                print("Dispatch details updated successfully.")
+            } catch {
+                print("Error updating dispatch details: \(error)")
+            }
+        }
     }
+
 }
