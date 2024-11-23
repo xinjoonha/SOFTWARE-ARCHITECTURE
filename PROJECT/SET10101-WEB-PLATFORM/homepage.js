@@ -30,6 +30,12 @@ const analytics = getAnalytics(app);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+document.getElementById('existingPatientNewDispatchButton').style.display = 'none';
+document.getElementById('find-by-nhs-bottom-text').style.display = 'none';
+document.getElementById('create-patient-bottom-text').style.display = 'none';
+document.getElementById('refreshUIButton').style.display = 'none';
+
+
 // Function to generate a random NHS number
 function generateRandomNHSNumber() {
     // NHS numbers are 10-digit numbers
@@ -77,6 +83,7 @@ function resetUI() {
     firstNameField.disabled = false;
     lastNameField.disabled = false;
     addressField.disabled = false;
+    dateOfBirthField.disabled = false; // Unlock date of birth field
 
     // Reset buttons
     document.getElementById('createPatientButton').style.display = 'block';
@@ -116,6 +123,7 @@ document.getElementById('findByNHSButton').addEventListener('click', async funct
         const firstNameField = document.getElementById('first-name-field');
         const lastNameField = document.getElementById('last-name-field');
         const addressField = document.getElementById('address-field');
+        const dateOfBirthField = document.getElementById('date-of-birth-field');
 
         // If no patient found
         if (querySnapshot.empty) {
@@ -130,10 +138,12 @@ document.getElementById('findByNHSButton').addEventListener('click', async funct
             firstNameField.value = '';
             lastNameField.value = '';
             addressField.value = '';
+            dateOfBirthField.value = '';
 
             firstNameField.disabled = false;
             lastNameField.disabled = false;
             addressField.disabled = false;
+            dateOfBirthField.disabled = false;
 
             return;
         } else {
@@ -150,10 +160,25 @@ document.getElementById('findByNHSButton').addEventListener('click', async funct
                 lastNameField.value = patientData.lastName || '';
                 addressField.value = patientData.address || '';
 
+                // Handle date of birth
+                const dateOfBirthTimestamp = patientData.dateOfBirth;
+                let dateOfBirthStr = '';
+
+                if (dateOfBirthTimestamp) {
+                    const dateOfBirthDate = dateOfBirthTimestamp.toDate();
+                    const day = String(dateOfBirthDate.getDate()).padStart(2, '0');
+                    const month = String(dateOfBirthDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+                    const year = dateOfBirthDate.getFullYear();
+                    dateOfBirthStr = `${day}-${month}-${year}`;
+                }
+
+                dateOfBirthField.value = dateOfBirthStr || '';
+
                 // Lock the input fields
                 firstNameField.disabled = true;
                 lastNameField.disabled = true;
                 addressField.disabled = true;
+                dateOfBirthField.disabled = true;
 
                 // Hide create patient button, show existing patient button and refresh button
                 createPatientButton.style.display = 'none';
