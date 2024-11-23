@@ -7,15 +7,14 @@
 
 import SwiftUI
 
-struct Details: View
-{
+struct Details: View {
     var vehicle: Vehicle?
     @StateObject private var communications = Communications()
     @State private var dispatch: Dispatch? = nil
     @State private var patient: Patient? = nil
     @State private var isLoading: Bool = true
-    
-    // Added State variables for alerts
+
+    // State variables for alerts
     @State private var showStartRescueConfirmation = false
     @State private var showFinishRescueConfirmation = false
 
@@ -78,13 +77,15 @@ struct Details: View
                                 title: Text("Start Rescue"),
                                 message: Text("Are you sure you want to start the rescue?"),
                                 primaryButton: .default(Text("Start")) {
-                                    guard let dispatch = self.dispatch else {
-                                        print("No dispatch available to start rescue.")
+                                    guard let dispatch = self.dispatch,
+                                          let vehicle = self.vehicle
+                                    else {
+                                        print("No dispatch or vehicle available to start rescue.")
                                         return
                                     }
                                     Task {
                                         do {
-                                            try await communications.startRescue(dispatch: dispatch)
+                                            try await communications.startRescue(dispatch: dispatch, vehicle: vehicle)
                                             // Update dispatch status locally
                                             DispatchQueue.main.async {
                                                 self.dispatch?.status = "active"

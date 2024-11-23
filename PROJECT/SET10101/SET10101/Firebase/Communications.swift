@@ -56,7 +56,7 @@ class Communications: ObservableObject
     }
     
     //
-    func startRescue(dispatch: Dispatch)
+    func startRescue(dispatch: Dispatch, vehicle: Vehicle)
     async throws
     {
         let db = Firestore.firestore()
@@ -75,11 +75,17 @@ class Communications: ObservableObject
 
             print("Successfully updated dispatch with status 'active' and vehicleId '001'")
 
+            try await db.collection("vehicles")
+                .document(vehicle.id)
+                .updateData([
+                    "status": "engaged"
+                ])
+            
             // Example: Start sending GPS location every 30 seconds
             Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { timer in
                 Task {
                     do {
-                        let coordinates = GeoPoint(latitude: 37.7749, longitude: -122.4194) // Replace with actual coordinates
+                        let coordinates = GeoPoint(latitude: 37.7749, longitude: -122.4194)
                         try await db.collection("vehicles").document("001").updateData([
                             "coordinates": coordinates
                         ])
