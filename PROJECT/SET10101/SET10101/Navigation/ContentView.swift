@@ -17,12 +17,6 @@ struct ContentView: View
     {
         TabView
         {
-            Status(vehicle: vehicle, isLoading: isLoading, communications: communications, onRefresh: fetchVehicleStatus)
-                .tabItem
-                {
-                    Image(systemName: "figure.mixed.cardio")
-                    Text("Status")
-                }
             
             Details(vehicle: vehicle)
                 .tabItem

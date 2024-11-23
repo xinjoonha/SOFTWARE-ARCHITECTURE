@@ -13,6 +13,6 @@ struct Dispatch: Identifiable, Codable
     let id: String //document ID
     let date: Date
     let patientId: String //patient's ID
-    let status: String
+    var status: String
     let condition: String
 }

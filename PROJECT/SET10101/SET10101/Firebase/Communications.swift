@@ -54,9 +54,90 @@ class Communications: ObservableObject
             throw error
         }
     }
+    
+    //
+    func startRescue(dispatch: Dispatch)
+    async throws
+    {
+        let db = Firestore.firestore()
 
-    // Helper function to extract dispatch and patient information
-    private func extractDispatchAndPatient(from dispatchDocument: DocumentSnapshot) async throws -> (Dispatch, Patient) {
+        // Debugging log to ensure the correct ID is being used
+        print("Dispatch ID: \(dispatch.id)")
+
+        do {
+            // Update dispatch status to 'active' and add vehicleId '001'
+            try await db.collection("dispatches")
+                .document(dispatch.id)
+                .updateData([
+                    "status": "active",
+                    "vehicleId": "001"
+                ])
+
+            print("Successfully updated dispatch with status 'active' and vehicleId '001'")
+
+            // Example: Start sending GPS location every 30 seconds
+            Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { timer in
+                Task {
+                    do {
+                        let coordinates = GeoPoint(latitude: 37.7749, longitude: -122.4194) // Replace with actual coordinates
+                        try await db.collection("vehicles").document("001").updateData([
+                            "coordinates": coordinates
+                        ])
+                        print("Coordinates successfully updated to Firestore: \(coordinates)")
+                    } catch {
+                        print("Error updating coordinates: \(error.localizedDescription)")
+                    }
+                }
+            }
+
+        } catch {
+            print("Error updating dispatch status: \(error)")
+            throw error
+        }
+    }
+
+    //
+    func finishRescue(dispatch: Dispatch)
+    async throws
+    {
+        let db = Firestore.firestore()
+
+        do {
+            // Update dispatch status to 'completed' and remove vehicleId
+            try await db.collection("dispatches")
+                .document(dispatch.id)
+                .updateData([
+                    "status": "completed",
+                    "vehicleId": FieldValue.delete()
+                ])
+
+            // Update vehicle status to 'available'
+            try await db.collection("vehicles")
+                .document("001") // Replace with actual vehicleId if needed
+                .updateData([
+                    "status": "available"
+                ])
+
+            print("Successfully finished rescue and updated dispatch and vehicle status.")
+        } catch {
+            print("Error finishing rescue: \(error)")
+            throw error
+        }
+    }
+
+    
+    
+    
+    
+    
+    
+    
+    // HELPER FUNCTIONS
+    
+    //
+    private func extractDispatchAndPatient(from dispatchDocument: DocumentSnapshot)
+    async throws -> (Dispatch, Patient)
+    {
         let db = Firestore.firestore()
         let dispatchData = dispatchDocument.data() ?? [:]
 
@@ -106,49 +187,7 @@ class Communications: ObservableObject
         
         return (dispatch, patient)
     }
-
     
-    //
-    func startRescue(dispatch: Dispatch)
-    async throws
-    {
-        let db = Firestore.firestore()
-
-        // Debugging log to ensure the correct ID is being used
-        print("Dispatch ID: \(dispatch.id)")
-
-        do {
-            // Update dispatch status to 'active' and add vehicleId '001'
-            try await db.collection("dispatches")
-                .document(dispatch.id)
-                .updateData([
-                    "status": "active",
-                    "vehicleId": "001"
-                ])
-
-            print("Successfully updated dispatch with status 'active' and vehicleId '001'")
-
-            // Example: Start sending GPS location every 30 seconds
-            Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { timer in
-                Task {
-                    do {
-                        let coordinates = GeoPoint(latitude: 37.7749, longitude: -122.4194) // Replace with actual coordinates
-                        try await db.collection("vehicles").document("001").updateData([
-                            "coordinates": coordinates
-                        ])
-                        print("Coordinates successfully updated to Firestore: \(coordinates)")
-                    } catch {
-                        print("Error updating coordinates: \(error.localizedDescription)")
-                    }
-                }
-            }
-
-        } catch {
-            print("Error updating dispatch status: \(error)")
-            throw error
-        }
-    }
-
     //
     private func getCurrentLatitude()
     -> Double
@@ -163,82 +202,4 @@ class Communications: ObservableObject
         // Simulate getting current longitude
         return -3.1883 // Replace with actual GPS data
     }
-
-    //
-    func finishRescue()
-    async throws
-    {
-        /*
-         
-         1. update callout status to 'finished'
-         2. update vehicle status to 'available'
-         3. stop sending GPS location
-         
-         */
-    }
-    
-    //
-    func toggleStatus()
-    async throws
-    {
-        print("TOGGLESTATUS.SWIFT:TOGGLING STATUS")
-
-        let vehicleId = "001" // Hardcoded vehicle ID
-        let db = Firestore.firestore()
-        let vehicleDocumentRef = db.collection("vehicles").document(vehicleId)
-        
-        // Fetch the current status
-        let vehicleDocument = try await vehicleDocumentRef.getDocument()
-        guard let vehicleData = vehicleDocument.data(),
-              let currentStatus = vehicleData["status"] as? String else
-        {
-            print("TOGGLESTATUS.SWIFT:UNABLE-TO-RETRIEVE-CURRENT-STATUS")
-            return
-        }
-        
-        // Determine the new status
-        let newStatus = currentStatus == "available" ? "engaged" : "available"
-        print("TOGGLESTATUS.SWIFT:CURRENT STATUS: \(currentStatus), NEW STATUS: \(newStatus)")
-        
-        // Update the status in Firestore
-        try await vehicleDocumentRef.updateData(["status": newStatus])
-        print("TOGGLESTATUS.SWIFT:SUCCESSFULLY-UPDATED-STATUS")
-    }
-    
-    //
-    func fetchStatus()
-    async throws -> Vehicle
-    {
-        let vehicleId = "001" // Hardcoded vehicle ID
-        let vehicleRef = Firestore.firestore().collection("vehicles").document(vehicleId)
-        
-        do
-        {
-            // Fetch vehicle document
-            let snapshot = try await vehicleRef.getDocument()
-            
-            guard let data = snapshot.data() else
-            {
-                print("FETCHSTATUS.SWIFT:NO-DATA-FOUND for vehicle ID: \(vehicleId)")
-                throw NSError(domain: "FETCHSTATUS", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data found for vehicle ID \(vehicleId)"])
-            }
-            
-            // Extract fields
-            guard let coordinates = data["coordinates"] as? GeoPoint,
-                  let status = data["status"] as? String else
-            {
-                print("FETCHSTATUS.SWIFT:INVALID-DATA-FORMAT")
-                throw NSError(domain: "FETCHSTATUS", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid data format"])
-            }
-            
-            // Return mapped Vehicle object
-            return Vehicle(id: vehicleId, coordinates: coordinates, status: status)
-        }
-        catch
-        {
-            print("FETCHSTATUS.SWIFT:ERROR FETCHING VEHICLE DATA - \(error)")
-            throw error // Propagate the error to the caller
-        }
-    }
-
 }
