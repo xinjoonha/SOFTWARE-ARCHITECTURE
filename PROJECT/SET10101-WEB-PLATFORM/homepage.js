@@ -1,4 +1,3 @@
-
 // <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 // <script type="module">
 
@@ -29,6 +28,32 @@ const analytics = getAnalytics(app);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+// Function to reset the UI to its initial state
+function resetUI() {
+    // Get references to input fields
+    const firstNameField = document.getElementById('first-name-field');
+    const lastNameField = document.getElementById('last-name-field');
+    const addressField = document.getElementById('address-field');
+
+    // Clear input fields
+    firstNameField.value = '';
+    lastNameField.value = '';
+    addressField.value = '';
+
+    // Unlock input fields
+    firstNameField.disabled = false;
+    lastNameField.disabled = false;
+    addressField.disabled = false;
+
+    // Reset buttons
+    document.getElementById('createPatientButton').style.display = 'block';
+    document.getElementById('existingPatientNewDispatchButton').style.display = 'none';
+    document.getElementById('refreshUIButton').style.display = 'none';
+
+    // Clear bottom text
+    document.getElementById('find-by-nhs-bottom-text').innerText = '';
+}
+
 document.getElementById('findByNHSButton').addEventListener('click', async function(event) {
     event.preventDefault();
 
@@ -52,6 +77,7 @@ document.getElementById('findByNHSButton').addEventListener('click', async funct
         // Get references to buttons
         const createPatientButton = document.getElementById('createPatientButton');
         const existingPatientButton = document.getElementById('existingPatientNewDispatchButton');
+        const refreshUIButton = document.getElementById('refreshUIButton');
 
         // Get references to input fields
         const firstNameField = document.getElementById('first-name-field');
@@ -62,21 +88,26 @@ document.getElementById('findByNHSButton').addEventListener('click', async funct
         if (querySnapshot.empty) {
             findByNhsBottomText.innerText = "Patient not found, create new patient below";
 
-            // Show the create patient button, hide the existing patient button
+            // Show the create patient button, hide the existing patient button and refresh button
             createPatientButton.style.display = 'block';
             existingPatientButton.style.display = 'none';
+            refreshUIButton.style.display = 'none';
 
-            // Clear any pre-filled fields
+            // Clear any pre-filled fields and unlock them
             firstNameField.value = '';
             lastNameField.value = '';
             addressField.value = '';
+
+            firstNameField.disabled = false;
+            lastNameField.disabled = false;
+            addressField.disabled = false;
 
             return;
         } else {
             // Patient found
             querySnapshot.forEach((doc) => {
                 const patientData = doc.data();
-                const patientId = patientData.patientId; // Use patientData.patientId instead of doc.id
+                const patientId = patientData.patientId; // Use patientData.patientId
 
                 // Update bottom text
                 findByNhsBottomText.innerText = `Patient ${patientId} found, see details below`;
@@ -86,15 +117,29 @@ document.getElementById('findByNHSButton').addEventListener('click', async funct
                 lastNameField.value = patientData.lastName || '';
                 addressField.value = patientData.address || '';
 
-                // Hide create patient button, show existing patient button
+                // Lock the input fields
+                firstNameField.disabled = true;
+                lastNameField.disabled = true;
+                addressField.disabled = true;
+
+                // Hide create patient button, show existing patient button and refresh button
                 createPatientButton.style.display = 'none';
                 existingPatientButton.style.display = 'block';
+                refreshUIButton.style.display = 'block';
             });
         }
     } catch (error) {
         console.error("Error fetching patient data:", error);
         alert("An error occurred while fetching patient data.");
     }
+});
+
+// Add event listener for the refresh button
+document.getElementById('refreshUIButton').addEventListener('click', function(event) {
+    event.preventDefault();
+
+    // Reset the UI
+    resetUI();
 });
 
 // </script>
