@@ -115,11 +115,27 @@ struct Details: View
                 }
                 .padding()
             } else {
-                Text("No dispatch details available.")
-                    .font(.title)
-                    .foregroundColor(.gray)
-                    .multilineTextAlignment(.center)
+                VStack {
+                    Text("No dispatch details available.")
+                        .font(.title)
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                        .padding()
+
+                    Button(action: {
+                        Task {
+                            await fetchDispatchAndPatientDetails()
+                        }
+                    }) {
+                        Text("Fetch Dispatch Details")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .foregroundColor(.white)
+                            .background(Color.gray)
+                            .cornerRadius(8)
+                    }
                     .padding()
+                }
             }
         }
         .onAppear {

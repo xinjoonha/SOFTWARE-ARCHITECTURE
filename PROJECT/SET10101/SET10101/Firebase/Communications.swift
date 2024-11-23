@@ -124,6 +124,42 @@ class Communications: ObservableObject
             throw error
         }
     }
+    
+    //
+    func fetchStatus()
+    async throws -> Vehicle
+    {
+        let vehicleId = "001" // Hardcoded vehicle ID
+        let vehicleRef = Firestore.firestore().collection("vehicles").document(vehicleId)
+        
+        do
+        {
+            // Fetch vehicle document
+            let snapshot = try await vehicleRef.getDocument()
+            
+            guard let data = snapshot.data() else
+            {
+                print("FETCHSTATUS.SWIFT:NO-DATA-FOUND for vehicle ID: \(vehicleId)")
+                throw NSError(domain: "FETCHSTATUS", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data found for vehicle ID \(vehicleId)"])
+            }
+            
+            // Extract fields
+            guard let coordinates = data["coordinates"] as? GeoPoint,
+                  let status = data["status"] as? String else
+            {
+                print("FETCHSTATUS.SWIFT:INVALID-DATA-FORMAT")
+                throw NSError(domain: "FETCHSTATUS", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid data format"])
+            }
+            
+            // Return mapped Vehicle object
+            return Vehicle(id: vehicleId, coordinates: coordinates, status: status)
+        }
+        catch
+        {
+            print("FETCHSTATUS.SWIFT:ERROR FETCHING VEHICLE DATA - \(error)")
+            throw error // Propagate the error to the caller
+        }
+    }
 
     
     
