@@ -10,9 +10,15 @@ import Foundation
 import Firebase
 import FirebaseFirestore
 import UIKit
+import CoreLocation
 
-class Communications: ObservableObject
+class Communications: NSObject, ObservableObject, CLLocationManagerDelegate
 {
+    private var locationManager: CLLocationManager?
+    private var locationTimer: Timer?
+    private var db = Firestore.firestore()
+    private var vehicleId = "001"
+    
     //
     func fetchDispatchInfo()
     async throws -> (Dispatch, Patient)?
@@ -81,19 +87,9 @@ class Communications: ObservableObject
                     "status": "engaged"
                 ])
             
-            // Example: Start sending GPS location every 30 seconds
-            Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { timer in
-                Task {
-                    do {
-                        let coordinates = GeoPoint(latitude: 37.7749, longitude: -122.4194)
-                        try await db.collection("vehicles").document("001").updateData([
-                            "coordinates": coordinates
-                        ])
-                        print("Coordinates successfully updated to Firestore: \(coordinates)")
-                    } catch {
-                        print("Error updating coordinates: \(error.localizedDescription)")
-                    }
-                }
+            DispatchQueue.main.async
+            {
+                self.startUpdatingLocation()
             }
 
         } catch {
@@ -124,6 +120,11 @@ class Communications: ObservableObject
                     "status": "available"
                 ])
 
+            DispatchQueue.main.async
+            {
+                self.stopUpdatingLocation()
+            }
+            
             print("Successfully finished rescue and updated dispatch and vehicle status.")
         } catch {
             print("Error finishing rescue: \(error)")
@@ -223,6 +224,81 @@ class Communications: ObservableObject
         }
     }
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    // GPS
+    
+    //
+    func startUpdatingLocation()
+    {
+        locationManager = CLLocationManager()
+        locationManager?.delegate = self
+        locationManager?.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager?.requestWhenInUseAuthorization()
+        locationManager?.startUpdatingLocation()
+        
+        // Schedule timer to update coordinates every 15 seconds
+        locationTimer = Timer.scheduledTimer(timeInterval: 15, target: self, selector: #selector(updateCoordinates), userInfo: nil, repeats: true)
+    }
+
+    //
+    func stopUpdatingLocation()
+    {
+        locationManager?.stopUpdatingLocation()
+        locationManager = nil
+        locationTimer?.invalidate()
+        locationTimer = nil
+    }
+
+    //
+    @objc private func updateCoordinates()
+    {
+        guard let location = locationManager?.location else {
+            print("Location data is not available.")
+            return
+        }
+        
+        let latitude = location.coordinate.latitude
+        let longitude = location.coordinate.longitude
+        let coordinates = GeoPoint(latitude: latitude, longitude: longitude)
+        
+        Task {
+            do {
+                try await db.collection("vehicles").document(vehicleId).updateData([
+                    "coordinates": coordinates
+                ])
+                print("Coordinates successfully updated to Firestore: \(coordinates)")
+            } catch {
+                print("Error updating coordinates: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    //
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus)
+    {
+        switch status
+        {
+        case .authorizedWhenInUse, .authorizedAlways:
+            locationManager?.startUpdatingLocation()
+        case .denied, .restricted:
+            print("Location access denied.")
+            // Handle denial
+        default:
+            break
+        }
+    }
+    
+    
+    
     
     
     

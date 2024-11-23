@@ -17,4 +17,5 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
             FirebaseApp.configure()
             return true
     }
+
 }
