@@ -8,7 +8,9 @@ import {
   collection,
   query,
   where,
-  getDocs
+  getDocs,
+  addDoc,
+  Timestamp
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
@@ -28,19 +30,48 @@ const analytics = getAnalytics(app);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+// Function to generate a random NHS number
+function generateRandomNHSNumber() {
+    // NHS numbers are 10-digit numbers
+    let nhsNumber = '';
+    for (let i = 0; i < 10; i++) {
+        nhsNumber += Math.floor(Math.random() * 10);
+    }
+    return nhsNumber;
+}
+
+// Function to generate a unique NHS number
+async function generateUniqueNHSNumber() {
+    let nhsNumber;
+    let exists = true;
+    while (exists) {
+        nhsNumber = generateRandomNHSNumber();
+        // Check if this NHS number already exists
+        const patientsRef = collection(db, "patients");
+        const q = query(patientsRef, where("patientId", "==", nhsNumber));
+        const querySnapshot = await getDocs(q);
+        exists = !querySnapshot.empty;
+    }
+    return nhsNumber;
+}
+
 // Function to reset the UI to its initial state
 function resetUI() {
     // Get references to input fields
     const firstNameField = document.getElementById('first-name-field');
     const lastNameField = document.getElementById('last-name-field');
     const addressField = document.getElementById('address-field');
-    const nhsNumberField = document.getElementById('nhs-number-field')
+    const nhsNumberField = document.getElementById('nhs-number-field');
+    const dateOfBirthField = document.getElementById('date-of-birth-field');
+    const conditionField = document.getElementById('condition-field');
 
     // Clear input fields
     firstNameField.value = '';
     lastNameField.value = '';
     addressField.value = '';
     nhsNumberField.value = '';
+    dateOfBirthField.value = '';
+    conditionField.value = '';
 
     // Unlock input fields
     firstNameField.disabled = false;
@@ -142,6 +173,66 @@ document.getElementById('refreshUIButton').addEventListener('click', function(ev
 
     // Reset the UI
     resetUI();
+});
+
+// Add event listener for the create patient button
+document.getElementById('createPatientButton').addEventListener('click', async function(event) {
+    event.preventDefault();
+
+    // Get input values
+    const firstName = document.getElementById('first-name-field').value.trim();
+    const lastName = document.getElementById('last-name-field').value.trim();
+    const dateOfBirthStr = document.getElementById('date-of-birth-field').value.trim();
+    const address = document.getElementById('address-field').value.trim();
+    const condition = document.getElementById('condition-field').value.trim();
+
+    // Validate inputs
+    if (!firstName || !lastName || !dateOfBirthStr || !address || !condition) {
+        alert('Please fill in all required fields.');
+        return;
+    }
+
+    // Convert dateOfBirth from string 'DD-MM-YYYY' to Date object
+    const [day, month, year] = dateOfBirthStr.split('-');
+    const dateOfBirth = new Date(`${year}-${month}-${day}`);
+    if (isNaN(dateOfBirth)) {
+        alert('Invalid date of birth. Please use DD-MM-YYYY format.');
+        return;
+    }
+
+    try {
+        // Generate a unique NHS number
+        const nhsNumber = await generateUniqueNHSNumber();
+
+        // Create patient document
+        const patientData = {
+            firstName,
+            lastName,
+            dateOfBirth: Timestamp.fromDate(dateOfBirth),
+            address,
+            patientId: nhsNumber
+        };
+
+        await addDoc(collection(db, 'patients'), patientData);
+
+        // Create dispatch document
+        const dispatchData = {
+            date: Timestamp.now(),
+            patientId: nhsNumber,
+            status: 'pending',
+            condition
+        };
+
+        await addDoc(collection(db, 'dispatches'), dispatchData);
+
+        alert(`Patient and dispatch created successfully.\nAssigned NHS Number: ${nhsNumber}`);
+
+        // Reset the UI
+        resetUI();
+    } catch (error) {
+        console.error('Error creating patient and dispatch:', error);
+        alert('An error occurred while creating the patient and dispatch.');
+    }
 });
 
 // </script>
