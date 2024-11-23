@@ -7,8 +7,11 @@
 
 import SwiftUI
 
-struct Update: View {
+struct Update: View
+{
     var vehicle: Vehicle?
+    
+    @Environment(\.dismiss) private var dismiss
     
     @State private var actionsTaken: String = ""
     @State private var timeSpentMinutes: Int = 0
@@ -34,14 +37,14 @@ struct Update: View {
                         .padding()
                 } else {
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Add Details")
+                        Text("Add or edit details")
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .padding(.bottom, 8)
                         
                         // Actions Taken Section
                         VStack(alignment: .leading) {
-                            Text("Actions Taken")
+                            Text("Actions taken")
                             
                             ZStack(alignment: .topLeading) {
                                 RoundedRectangle(cornerRadius: 8)
@@ -57,7 +60,7 @@ struct Update: View {
                         
                         // Time Spent Section
                         VStack(alignment: .leading) {
-                            Text("Time Spent (Minutes & Seconds)")
+                            Text("Time spent (minutes & seconds)")
                             
                             HStack {
                                 Picker("Minutes", selection: $timeSpentMinutes) {
@@ -81,7 +84,7 @@ struct Update: View {
                         
                         // Additional Notes Section
                         VStack(alignment: .leading) {
-                            Text("Additional Notes")
+                            Text("Additional notes")
                             
                             ZStack(alignment: .topLeading) {
                                 RoundedRectangle(cornerRadius: 8)
@@ -101,7 +104,7 @@ struct Update: View {
                         Button(action: {
                             submitCalloutDetails()
                         }) {
-                            Text("Submit Updates")
+                            Text("Submit updates")
                                 .frame(maxWidth: .infinity)
                                 .padding()
                                 .foregroundColor(.white)
@@ -157,13 +160,14 @@ struct Update: View {
     //
     private func submitCalloutDetails()
     {
-        print("Actions Taken: \(actionsTaken)")
-        print("Time Spent: \(timeSpentMinutes) min, \(timeSpentSeconds) sec")
-        print("Additional Notes: \(additionalNotes)")
+        print("Actions taken: \(actionsTaken)")
+        print("Time spent: \(timeSpentMinutes) min, \(timeSpentSeconds) sec")
+        print("Additional notes: \(additionalNotes)")
         
         let timeSpent = "\(timeSpentMinutes),\(timeSpentSeconds)"
         
-        Task {
+        Task
+        {
             do {
                 try await communications.updateDispatchDetails(
                     dispatchId: dispatchId,
@@ -176,6 +180,11 @@ struct Update: View {
                 print("Error updating dispatch details: \(error)")
             }
         }
+        
+        DispatchQueue.main.async {
+            self.dismiss()
+        }
+
     }
 
 }
