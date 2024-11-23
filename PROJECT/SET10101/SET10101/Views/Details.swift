@@ -14,6 +14,10 @@ struct Details: View
     @State private var dispatch: Dispatch? = nil
     @State private var patient: Patient? = nil
     @State private var isLoading: Bool = true
+    
+    // Added State variables for alerts
+    @State private var showStartRescueConfirmation = false
+    @State private var showFinishRescueConfirmation = false
 
     var body: some View {
         VStack {
@@ -57,21 +61,8 @@ struct Details: View
                     // Button depends on dispatch status
                     if dispatch.status == "pending" {
                         Button(action: {
-                            guard let dispatch = self.dispatch else {
-                                print("No dispatch available to start rescue.")
-                                return
-                            }
-                            Task {
-                                do {
-                                    try await communications.startRescue(dispatch: dispatch)
-                                    // Update dispatch status locally
-                                    DispatchQueue.main.async {
-                                        self.dispatch?.status = "active"
-                                    }
-                                } catch {
-                                    print("Error starting rescue: \(error)")
-                                }
-                            }
+                            // Show confirmation alert
+                            self.showStartRescueConfirmation = true
                         }) {
                             Text("Start Rescue")
                                 .frame(maxWidth: .infinity)
@@ -81,26 +72,35 @@ struct Details: View
                                 .cornerRadius(8)
                         }
                         .padding(.top, 16)
+                        // Confirmation Alert for Start Rescue
+                        .alert(isPresented: $showStartRescueConfirmation) {
+                            Alert(
+                                title: Text("Start Rescue"),
+                                message: Text("Are you sure you want to start the rescue?"),
+                                primaryButton: .default(Text("Start")) {
+                                    guard let dispatch = self.dispatch else {
+                                        print("No dispatch available to start rescue.")
+                                        return
+                                    }
+                                    Task {
+                                        do {
+                                            try await communications.startRescue(dispatch: dispatch)
+                                            // Update dispatch status locally
+                                            DispatchQueue.main.async {
+                                                self.dispatch?.status = "active"
+                                            }
+                                        } catch {
+                                            print("Error starting rescue: \(error)")
+                                        }
+                                    }
+                                },
+                                secondaryButton: .cancel()
+                            )
+                        }
                     } else if dispatch.status == "active" {
                         Button(action: {
-                            guard let dispatch = self.dispatch else {
-                                print("No dispatch available to finish rescue.")
-                                return
-                            }
-                            Task {
-                                do {
-                                    try await communications.finishRescue(dispatch: dispatch)
-                                    // Reset dispatch and patient after finishing rescue
-                                    DispatchQueue.main.async {
-                                        self.dispatch = nil
-                                        self.patient = nil
-                                    }
-                                    // Optionally fetch the next dispatch
-                                    await fetchDispatchAndPatientDetails()
-                                } catch {
-                                    print("Error finishing rescue: \(error)")
-                                }
-                            }
+                            // Show confirmation alert
+                            self.showFinishRescueConfirmation = true
                         }) {
                             Text("Finish Rescue")
                                 .frame(maxWidth: .infinity)
@@ -110,6 +110,34 @@ struct Details: View
                                 .cornerRadius(8)
                         }
                         .padding(.top, 16)
+                        // Confirmation Alert for Finish Rescue
+                        .alert(isPresented: $showFinishRescueConfirmation) {
+                            Alert(
+                                title: Text("Finish Rescue"),
+                                message: Text("Are you sure you want to finish the rescue?"),
+                                primaryButton: .default(Text("Finish")) {
+                                    guard let dispatch = self.dispatch else {
+                                        print("No dispatch available to finish rescue.")
+                                        return
+                                    }
+                                    Task {
+                                        do {
+                                            try await communications.finishRescue(dispatch: dispatch)
+                                            // Reset dispatch and patient after finishing rescue
+                                            DispatchQueue.main.async {
+                                                self.dispatch = nil
+                                                self.patient = nil
+                                            }
+                                            // Optionally fetch the next dispatch
+                                            await fetchDispatchAndPatientDetails()
+                                        } catch {
+                                            print("Error finishing rescue: \(error)")
+                                        }
+                                    }
+                                },
+                                secondaryButton: .cancel()
+                            )
+                        }
                     }
 
                 }
