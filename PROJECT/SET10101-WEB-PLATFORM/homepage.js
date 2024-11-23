@@ -34,11 +34,13 @@ function resetUI() {
     const firstNameField = document.getElementById('first-name-field');
     const lastNameField = document.getElementById('last-name-field');
     const addressField = document.getElementById('address-field');
+    const nhsNumberField = document.getElementById('nhs-number-field')
 
     // Clear input fields
     firstNameField.value = '';
     lastNameField.value = '';
     addressField.value = '';
+    nhsNumberField.value = '';
 
     // Unlock input fields
     firstNameField.disabled = false;
