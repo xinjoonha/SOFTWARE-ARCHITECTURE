@@ -112,6 +112,7 @@ document.getElementById('findByNHSButton').addEventListener('click', async funct
     }
 
     const findByNhsBottomText = document.getElementById('find-by-nhs-bottom-text');
+    document.getElementById('find-by-nhs-bottom-text').style.display = 'flex';
 
     try {
         // Query Firestore for patients with the entered NHS number
