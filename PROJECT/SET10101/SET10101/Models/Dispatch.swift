@@ -10,9 +10,9 @@ import FirebaseFirestore
 
 struct Dispatch: Identifiable, Codable
 {
-    let id: String //document ID
+    let id: String
     let date: Date
-    let patientId: String //patient's ID
+    let patientId: String
     var status: String
     let condition: String
 }

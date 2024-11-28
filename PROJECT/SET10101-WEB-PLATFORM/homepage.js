@@ -14,6 +14,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
+// INITIALIZE FIREBASE CONFIGURATION
 const firebaseConfig = {
   apiKey: "AIzaSyDJZvkJV8HkbwZ-zkkngjwHpCCwmGOpazc",
   authDomain: "set10101.firebaseapp.com",
@@ -24,23 +25,24 @@ const firebaseConfig = {
   measurementId: "G-C4DML3W8B6"
 };
 
-// Initialize Firebase
+// INITIALIZE FIREBASE
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+// HIDE SPECIFIC UI ELEMENTS INITIALLY
 document.getElementById('existingPatientNewDispatchButton').style.display = 'none';
 document.getElementById('find-by-nhs-bottom-text').style.display = 'none';
 document.getElementById('create-patient-bottom-text').style.display = 'none';
 document.getElementById('refreshUIButton').style.display = 'none';
 
-// Variable to store the found patient's NHS number
+// VARIABLE TO STORE THE FOUND PATIENT'S NHS NUMBER
 let foundPatientId = null;
 
-// Function to generate a random NHS number
+// FUNCTION TO GENERATE A RANDOM NHS NUMBER
 function generateRandomNHSNumber() {
-    // NHS numbers are 10-digit numbers
+    // GENERATE A 10-DIGIT NHS NUMBER
     let nhsNumber = '';
     for (let i = 0; i < 10; i++) {
         nhsNumber += Math.floor(Math.random() * 10);
@@ -48,13 +50,13 @@ function generateRandomNHSNumber() {
     return nhsNumber;
 }
 
-// Function to generate a unique NHS number
+// FUNCTION TO GENERATE A UNIQUE NHS NUMBER
 async function generateUniqueNHSNumber() {
     let nhsNumber;
     let exists = true;
     while (exists) {
         nhsNumber = generateRandomNHSNumber();
-        // Check if this NHS number already exists
+        // CHECK IF THE NHS NUMBER ALREADY EXISTS
         const patientsRef = collection(db, "patients");
         const q = query(patientsRef, where("patientId", "==", nhsNumber));
         const querySnapshot = await getDocs(q);
@@ -63,9 +65,9 @@ async function generateUniqueNHSNumber() {
     return nhsNumber;
 }
 
-// Function to reset the UI to its initial state
+// FUNCTION TO RESET THE UI TO ITS INITIAL STATE
 function resetUI() {
-    // Get references to input fields
+    // GET REFERENCES TO INPUT FIELDS
     const firstNameField = document.getElementById('first-name-field');
     const lastNameField = document.getElementById('last-name-field');
     const addressField = document.getElementById('address-field');
@@ -73,7 +75,7 @@ function resetUI() {
     const dateOfBirthField = document.getElementById('date-of-birth-field');
     const conditionField = document.getElementById('condition-field');
 
-    // Clear input fields
+    // CLEAR INPUT FIELDS
     firstNameField.value = '';
     lastNameField.value = '';
     addressField.value = '';
@@ -81,31 +83,32 @@ function resetUI() {
     dateOfBirthField.value = '';
     conditionField.value = '';
 
-    // Unlock input fields
+    // UNLOCK INPUT FIELDS
     firstNameField.disabled = false;
     lastNameField.disabled = false;
     addressField.disabled = false;
-    dateOfBirthField.disabled = false; // Unlock date of birth field
+    dateOfBirthField.disabled = false;
 
-    // Reset buttons
+    // RESET BUTTONS
     document.getElementById('createPatientButton').style.display = 'block';
     document.getElementById('existingPatientNewDispatchButton').style.display = 'none';
     document.getElementById('refreshUIButton').style.display = 'none';
 
-    // Clear bottom text
+    // CLEAR BOTTOM TEXT
     document.getElementById('find-by-nhs-bottom-text').innerText = '';
 
-    // Reset foundPatientId
+    // RESET FOUND PATIENT ID
     foundPatientId = null;
 }
 
+// ADD EVENT LISTENER TO FIND BY NHS BUTTON
 document.getElementById('findByNHSButton').addEventListener('click', async function(event) {
     event.preventDefault();
 
-    // Get the value from nhs-number-field
+    // GETTING THE VALUE FROM: nhs-number-field
     const nhsNumber = document.getElementById('nhs-number-field').value.trim();
 
-    // Alert and stop if empty value is provided
+    // ALERT AND STOP IF EMPTY VALUE IS PROVIDED
     if (!nhsNumber) {
         alert("Please enter an NHS number.");
         return;
@@ -115,32 +118,32 @@ document.getElementById('findByNHSButton').addEventListener('click', async funct
     document.getElementById('find-by-nhs-bottom-text').style.display = 'flex';
 
     try {
-        // Query Firestore for patients with the entered NHS number
+        // QUERY FIRESTORE FOR PATIENTS WITH THE ENTERED NHS NUMBER
         const patientsRef = collection(db, "patients");
         const q = query(patientsRef, where("patientId", "==", nhsNumber));
         const querySnapshot = await getDocs(q);
 
-        // Get references to buttons
+        // GET REFERENCES TO BUTTONS
         const createPatientButton = document.getElementById('createPatientButton');
         const existingPatientButton = document.getElementById('existingPatientNewDispatchButton');
         const refreshUIButton = document.getElementById('refreshUIButton');
 
-        // Get references to input fields
+        // GET REFERENCES TO INPUT FIELDS
         const firstNameField = document.getElementById('first-name-field');
         const lastNameField = document.getElementById('last-name-field');
         const addressField = document.getElementById('address-field');
         const dateOfBirthField = document.getElementById('date-of-birth-field');
 
-        // If no patient found
+        // IF NO PATIENT IS FOUND
         if (querySnapshot.empty) {
             findByNhsBottomText.innerText = "Patient not found, create new patient below";
 
-            // Show the create patient button, hide the existing patient button and refresh button
+            // SHOW THE CREATE PATIENT BUTTON, HIDE THE EXISTING PATIENT BUTTON AND REFRESH BUTTON
             createPatientButton.style.display = 'block';
             existingPatientButton.style.display = 'none';
             refreshUIButton.style.display = 'none';
 
-            // Clear any pre-filled fields and unlock them
+            // CLEAR ANY PRE-FILLED FIELDS AND UNLOCK THEM
             firstNameField.value = '';
             lastNameField.value = '';
             addressField.value = '';
@@ -151,50 +154,50 @@ document.getElementById('findByNHSButton').addEventListener('click', async funct
             addressField.disabled = false;
             dateOfBirthField.disabled = false;
 
-            // Reset foundPatientId
+            // RESET FOUND PATIENT ID
             foundPatientId = null;
 
             return;
         } else {
-            // Patient found
+            // PATIENT FOUND
             querySnapshot.forEach((doc) => {
                 const patientData = doc.data();
-                const patientId = patientData.patientId; // Use patientData.patientId
+                const patientId = patientData.patientId; // USE PATIENT ID FROM DOCUMENT DATA
 
-                // Update bottom text
+                // UPDATE BOTTOM TEXT
                 findByNhsBottomText.innerText = `Patient ${patientId} found, see details below`;
 
-                // Prefill the fields
+                // PREFILL THE FIELDS
                 firstNameField.value = patientData.firstName || '';
                 lastNameField.value = patientData.lastName || '';
                 addressField.value = patientData.address || '';
 
-                // Handle date of birth
+                // HANDLE DATE OF BIRTH
                 const dateOfBirthTimestamp = patientData.dateOfBirth;
                 let dateOfBirthStr = '';
 
                 if (dateOfBirthTimestamp) {
                     const dateOfBirthDate = dateOfBirthTimestamp.toDate();
                     const day = String(dateOfBirthDate.getDate()).padStart(2, '0');
-                    const month = String(dateOfBirthDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+                    const month = String(dateOfBirthDate.getMonth() + 1).padStart(2, '0'); // MONTHS ARE ZERO-BASED
                     const year = dateOfBirthDate.getFullYear();
                     dateOfBirthStr = `${day}-${month}-${year}`;
                 }
 
                 dateOfBirthField.value = dateOfBirthStr || '';
 
-                // Lock the input fields
+                // LOCK THE INPUT FIELDS
                 firstNameField.disabled = true;
                 lastNameField.disabled = true;
                 addressField.disabled = true;
                 dateOfBirthField.disabled = true;
 
-                // Hide create patient button, show existing patient button and refresh button
+                // HIDE CREATE PATIENT BUTTON, SHOW EXISTING PATIENT BUTTON AND REFRESH BUTTON
                 createPatientButton.style.display = 'none';
                 existingPatientButton.style.display = 'block';
                 refreshUIButton.style.display = 'block';
 
-                // Store the found patientId
+                // STORE THE FOUND PATIENT ID
                 foundPatientId = patientId;
             });
         }
@@ -204,32 +207,32 @@ document.getElementById('findByNHSButton').addEventListener('click', async funct
     }
 });
 
-// Add event listener for the refresh button
+// ADD EVENT LISTENER FOR REFRESH BUTTON
 document.getElementById('refreshUIButton').addEventListener('click', function(event) {
     event.preventDefault();
 
-    // Reset the UI
+    // RESET THE UI
     resetUI();
 });
 
-// Add event listener for the create patient button
+// ADD EVENT LISTENER FOR CREATE PATIENT BUTTON
 document.getElementById('createPatientButton').addEventListener('click', async function(event) {
     event.preventDefault();
 
-    // Get input values
+    // GET INPUT VALUES
     const firstName = document.getElementById('first-name-field').value.trim();
     const lastName = document.getElementById('last-name-field').value.trim();
     const dateOfBirthStr = document.getElementById('date-of-birth-field').value.trim();
     const address = document.getElementById('address-field').value.trim();
     const condition = document.getElementById('condition-field').value.trim();
 
-    // Validate inputs
+    // VALIDATE INPUTS
     if (!firstName || !lastName || !dateOfBirthStr || !address || !condition) {
         alert('Please fill in all required fields.');
         return;
     }
 
-    // Convert dateOfBirth from string 'DD-MM-YYYY' to Date object
+    // CONVERT DATE OF BIRTH FROM STRING TO DATE OBJECT
     const [day, month, year] = dateOfBirthStr.split('-');
     const dateOfBirth = new Date(`${year}-${month}-${day}`);
     if (isNaN(dateOfBirth)) {
@@ -238,10 +241,10 @@ document.getElementById('createPatientButton').addEventListener('click', async f
     }
 
     try {
-        // Generate a unique NHS number
+        // GENERATE A UNIQUE NHS NUMBER
         const nhsNumber = await generateUniqueNHSNumber();
 
-        // Create patient document
+        // CREATE PATIENT DOCUMENT
         const patientData = {
             firstName,
             lastName,
@@ -252,7 +255,7 @@ document.getElementById('createPatientButton').addEventListener('click', async f
 
         await addDoc(collection(db, 'patients'), patientData);
 
-        // Create dispatch document
+        // CREATE DISPATCH DOCUMENT
         const dispatchData = {
             date: Timestamp.now(),
             patientId: nhsNumber,
@@ -264,7 +267,7 @@ document.getElementById('createPatientButton').addEventListener('click', async f
 
         alert(`Patient and dispatch created successfully.\nAssigned NHS Number: ${nhsNumber}`);
 
-        // Reset the UI
+        // RESET THE UI
         resetUI();
     } catch (error) {
         console.error('Error creating patient and dispatch:', error);
@@ -272,14 +275,14 @@ document.getElementById('createPatientButton').addEventListener('click', async f
     }
 });
 
-// Add event listener for the existing patient new dispatch button
+// ADD EVENT LISTENER FOR EXISTING PATIENT NEW DISPATCH BUTTON
 document.getElementById('existingPatientNewDispatchButton').addEventListener('click', async function(event) {
     event.preventDefault();
 
-    // Get the condition from the 'condition-field'
+    // GET THE CONDITION FROM: condition-field
     const condition = document.getElementById('condition-field').value.trim();
 
-    // Validate that condition is not empty
+    // VALIDATE THAT CONDITION IS NOT EMPTY
     if (!condition) {
         alert('Please enter a condition.');
         return;
@@ -291,7 +294,7 @@ document.getElementById('existingPatientNewDispatchButton').addEventListener('cl
     }
 
     try {
-        // Create dispatch document
+        // CREATE DISPATCH DOCUMENT
         const dispatchData = {
             date: Timestamp.now(),
             patientId: foundPatientId,
@@ -303,7 +306,7 @@ document.getElementById('existingPatientNewDispatchButton').addEventListener('cl
 
         alert('Dispatch created successfully.');
 
-        // Reset the UI
+        // RESET THE UI
         resetUI();
     } catch (error) {
         console.error('Error creating dispatch:', error);

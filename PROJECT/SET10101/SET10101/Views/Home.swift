@@ -85,7 +85,7 @@ struct Home: View
                                 .cornerRadius(8)
                         }
                         .padding(.top, 16)
-                        // Confirmation Alert for Start Rescue
+                        // Confirmation alert for start rescue
                         .alert(isPresented: $showStartRescueConfirmation) {
                             Alert(
                                 title: Text("Start rescue"),
@@ -160,7 +160,6 @@ struct Home: View
                                                 self.dispatch = nil
                                                 self.patient = nil
                                             }
-                                            // Optionally fetch the next dispatch
                                             await fetchDispatchAndPatientDetails()
                                         } catch {
                                             print("Error finishing rescue: \(error)")

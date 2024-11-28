@@ -359,19 +359,4 @@ class Communications: NSObject, ObservableObject, CLLocationManagerDelegate
         
         return (dispatch, patient)
     }
-    
-    //
-    private func getCurrentLatitude()
-    -> Double
-    {
-        // Simulate getting current latitude
-        return 55.9533 // Replace with actual GPS data
-    }
-
-    private func getCurrentLongitude()
-    -> Double
-    {
-        // Simulate getting current longitude
-        return -3.1883 // Replace with actual GPS data
-    }
 }

@@ -17,10 +17,10 @@ struct Update: View
     @State private var timeSpentMinutes: Int = 0
     @State private var timeSpentSeconds: Int = 0
     @State private var additionalNotes: String = ""
-    @State private var isLoading: Bool = true // To handle loading state]
+    @State private var isLoading: Bool = true
     @State private var dispatchId: String = ""
     
-    @StateObject private var communications = Communications() // Instance of Communications class
+    @StateObject private var communications = Communications()
     
     var body: some View {
         Group {
@@ -42,7 +42,7 @@ struct Update: View
                             .fontWeight(.bold)
                             .padding(.bottom, 8)
                         
-                        // Actions Taken Section
+                        // Actions taken section
                         VStack(alignment: .leading) {
                             Text("Actions taken")
                             
@@ -58,7 +58,7 @@ struct Update: View
                             }
                         }
                         
-                        // Time Spent Section
+                        // Time spent section
                         VStack(alignment: .leading) {
                             Text("Time spent (minutes & seconds)")
                             
@@ -82,7 +82,7 @@ struct Update: View
                             .padding(.top, 4)
                         }
                         
-                        // Additional Notes Section
+                        // Additional notes section
                         VStack(alignment: .leading) {
                             Text("Additional notes")
                             
@@ -100,7 +100,7 @@ struct Update: View
                         
                         Spacer()
                         
-                        // Submit Button
+                        // Submit button
                         Button(action: {
                             submitCalloutDetails()
                         }) {
